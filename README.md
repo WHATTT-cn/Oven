@@ -2,7 +2,7 @@
 ## 🎬 在线演示
 
 
-- **[Oven 产品开放麦幻灯片](https://whattt-cn.github.io/Oven/)**
+- **[Oven产品开放麦demo展示幻灯片](https://weblinkpre.ok.kimi.link/)**
 
 ---
 
