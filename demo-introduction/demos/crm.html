@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nebula CRM · 智能客户关系管理平台</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#f6f7f9; --card:#ffffff; --ink:#16181d; --ink-2:#5b606a; --ink-3:#9aa0ab;
+  --line:#e8eaee; --line-2:#f0f1f4;
+  --brand:#4f46e5; --brand-soft:#eef0fe; --brand-ink:#4338ca;
+  --green:#0ea968; --green-soft:#e6f7f0;
+  --amber:#d97706; --amber-soft:#fdf3e3;
+  --red:#e5484d; --red-soft:#fdecec;
+  --blue:#2563eb; --blue-soft:#eaf1fe;
+  --violet:#7c3aed; --violet-soft:#f3eefd;
+  --side:#101322; --side-2:#1a1e33; --side-ink:#8b90a7;
+  --radius:14px; --shadow:0 1px 2px rgba(16,24,40,.05),0 1px 3px rgba(16,24,40,.04);
+  --shadow-lg:0 12px 32px rgba(16,24,40,.12);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{font-size:14px}
+body{font-family:'Inter',-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:#d4d7de;border-radius:8px}
+::-webkit-scrollbar-thumb:hover{background:#b8bdc8}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+input,select,textarea{font-family:inherit;font-size:inherit;color:inherit;outline:none}
+
+.app{display:flex;min-height:100vh}
+
+/* ============ 侧边栏 ============ */
+.sidebar{width:236px;background:var(--side);color:#fff;position:fixed;top:0;left:0;bottom:0;display:flex;flex-direction:column;z-index:50}
+.side-logo{display:flex;align-items:center;gap:11px;padding:22px 20px 18px}
+.side-logo .mark{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#6366f1,#8b5cf6 60%,#c084fc);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;box-shadow:0 4px 14px rgba(99,102,241,.45)}
+.side-logo .name{font-size:15.5px;font-weight:700;letter-spacing:.2px}
+.side-logo .sub{font-size:10.5px;color:var(--side-ink);letter-spacing:1.6px;margin-top:2px}
+.side-nav{flex:1;padding:8px 12px;overflow-y:auto}
+.nav-group{font-size:10.5px;color:#5a5f78;letter-spacing:1.8px;padding:16px 10px 7px;font-weight:600}
+.nav-item{display:flex;align-items:center;gap:11px;width:100%;padding:10px 12px;border-radius:9px;color:var(--side-ink);font-size:13.5px;font-weight:500;margin-bottom:2px;transition:all .18s;text-align:left}
+.nav-item svg{width:17px;height:17px;flex-shrink:0}
+.nav-item:hover{color:#e8eaf2;background:var(--side-2)}
+.nav-item.active{color:#fff;background:linear-gradient(90deg,rgba(99,102,241,.28),rgba(99,102,241,.1));box-shadow:inset 2.5px 0 0 #818cf8}
+.nav-item .badge{margin-left:auto;background:rgba(229,72,77,.9);color:#fff;font-size:10px;font-weight:700;padding:1.5px 7px;border-radius:20px}
+.side-user{margin:12px;padding:12px;background:var(--side-2);border-radius:12px;display:flex;align-items:center;gap:10px}
+.side-user .avatar{width:34px;height:34px;font-size:12px}
+.side-user .n{font-size:12.5px;font-weight:600}
+.side-user .r{font-size:11px;color:var(--side-ink);margin-top:1px}
+
+/* ============ 主区域 ============ */
+.main{flex:1;margin-left:236px;display:flex;flex-direction:column;min-width:0}
+.topbar{height:62px;background:rgba(255,255,255,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:16px;padding:0 26px;position:sticky;top:0;z-index:40}
+.topbar h1{font-size:16px;font-weight:700}
+.topbar .crumb{color:var(--ink-3);font-size:12.5px;margin-top:2px}
+.search{margin-left:auto;display:flex;align-items:center;gap:8px;background:var(--line-2);border:1px solid transparent;border-radius:9px;padding:7px 13px;width:250px;transition:all .2s}
+.search:focus-within{background:#fff;border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
+.search input{border:none;background:none;width:100%;font-size:13px}
+.search svg{width:15px;height:15px;color:var(--ink-3);flex-shrink:0}
+.icon-btn{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;color:var(--ink-2);position:relative;transition:all .15s}
+.icon-btn:hover{background:var(--line-2);color:var(--ink)}
+.icon-btn svg{width:18px;height:18px}
+.icon-btn .dot{position:absolute;top:7px;right:8px;width:7px;height:7px;background:var(--red);border-radius:50%;border:1.5px solid #fff}
+.top-avatar{width:34px;height:34px;font-size:12px;cursor:pointer}
+
+.avatar{border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;flex-shrink:0;letter-spacing:.5px}
+
+.content{padding:26px;max-width:1440px;width:100%;margin:0 auto}
+.page{display:none;animation:fadeUp .35s ease}
+.page.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ============ 通用组件 ============ */
+.grid{display:grid;gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.card-p{padding:20px}
+.card-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--line-2)}
+.card-head h3{font-size:14px;font-weight:700}
+.card-head .sub{font-size:12px;color:var(--ink-3);margin-top:2px;font-weight:400}
+.link-btn{font-size:12.5px;color:var(--brand);font-weight:600}
+.link-btn:hover{text-decoration:underline}
+
+.btn{display:inline-flex;align-items:center;gap:7px;padding:8px 15px;border-radius:9px;font-size:13px;font-weight:600;transition:all .15s;border:1px solid transparent}
+.btn svg{width:15px;height:15px}
+.btn-primary{background:var(--brand);color:#fff;box-shadow:0 2px 8px rgba(79,70,229,.3)}
+.btn-primary:hover{background:var(--brand-ink);transform:translateY(-1px)}
+.btn-ghost{background:#fff;border-color:var(--line);color:var(--ink-2)}
+.btn-ghost:hover{border-color:#cdd1da;color:var(--ink)}
+.btn-sm{padding:5px 11px;font-size:12px}
+
+.tag{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:20px}
+.tag-green{background:var(--green-soft);color:var(--green)}
+.tag-amber{background:var(--amber-soft);color:var(--amber)}
+.tag-red{background:var(--red-soft);color:var(--red)}
+.tag-blue{background:var(--blue-soft);color:var(--blue)}
+.tag-violet{background:var(--violet-soft);color:var(--violet)}
+.tag-gray{background:var(--line-2);color:var(--ink-2)}
+
+/* KPI */
+.kpi-grid{grid-template-columns:repeat(4,1fr)}
+.kpi{padding:19px 20px;display:flex;flex-direction:column;gap:4px;position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s}
+.kpi:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg)}
+.kpi .label{font-size:12.5px;color:var(--ink-2);font-weight:500;display:flex;align-items:center;gap:8px}
+.kpi .label .ic{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center}
+.kpi .label .ic svg{width:15px;height:15px}
+.kpi .value{font-size:26px;font-weight:800;letter-spacing:-.5px;margin-top:6px}
+.kpi .trend{font-size:12px;font-weight:600;display:flex;align-items:center;gap:4px;margin-top:2px}
+.kpi .trend.up{color:var(--green)}
+.kpi .trend.down{color:var(--red)}
+.kpi .trend span{color:var(--ink-3);font-weight:400}
+
+/* 表格 */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:11px 16px;font-size:11.5px;color:var(--ink-3);font-weight:600;letter-spacing:.6px;border-bottom:1px solid var(--line);white-space:nowrap;background:#fafbfc}
+td{padding:13px 16px;border-bottom:1px solid var(--line-2);vertical-align:middle}
+tbody tr{transition:background .12s}
+tbody tr:hover{background:#fafbfe}
+tbody tr:last-child td{border-bottom:none}
+.cell-main{display:flex;align-items:center;gap:11px}
+.cell-main .avatar{width:34px;height:34px;font-size:12px}
+.cell-main .t1{font-weight:600;font-size:13px}
+.cell-main .t2{font-size:11.5px;color:var(--ink-3);margin-top:1px}
+.mono{font-variant-numeric:tabular-nums}
+.row-click{cursor:pointer}
+
+/* 看板 */
+.kanban{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;align-items:start}
+.kcol{background:#f0f1f5;border-radius:13px;padding:12px;min-height:200px;transition:background .15s,box-shadow .15s}
+.kcol.drag-over{background:#e7e9f8;box-shadow:inset 0 0 0 2px var(--brand)}
+.kcol-head{display:flex;align-items:center;gap:8px;padding:2px 4px 11px}
+.kcol-head .dot{width:8px;height:8px;border-radius:50%}
+.kcol-head .name{font-size:13px;font-weight:700}
+.kcol-head .cnt{font-size:11px;background:#fff;color:var(--ink-2);border-radius:12px;padding:1px 8px;font-weight:600;border:1px solid var(--line)}
+.kcol-head .sum{margin-left:auto;font-size:11.5px;color:var(--ink-3);font-weight:600}
+.kcard{background:#fff;border:1px solid var(--line);border-radius:11px;padding:13px 14px;margin-bottom:10px;cursor:grab;box-shadow:var(--shadow);transition:transform .15s,box-shadow .15s,border-color .15s}
+.kcard:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg);border-color:#d5d8e4}
+.kcard.dragging{opacity:.45;cursor:grabbing}
+.kcard .co{font-size:13.5px;font-weight:700;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.kcard .amt{font-size:15px;font-weight:800;color:var(--brand-ink);margin:7px 0 9px;letter-spacing:-.3px}
+.kcard .meta{display:flex;align-items:center;justify-content:space-between}
+.kcard .owner{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--ink-2)}
+.kcard .owner .avatar{width:20px;height:20px;font-size:9.5px}
+.prob{width:64px}
+.prob .bar{height:4px;background:var(--line-2);border-radius:4px;overflow:hidden}
+.prob .bar i{display:block;height:100%;border-radius:4px}
+.prob .pt{font-size:10.5px;color:var(--ink-3);margin-top:3px;text-align:right}
+.kcard .due{font-size:11px;color:var(--ink-3);margin-top:9px;display:flex;align-items:center;gap:5px}
+.kcard .due svg{width:12px;height:12px}
+
+/* 进度条 */
+.pbar{height:7px;background:var(--line-2);border-radius:6px;overflow:hidden}
+.pbar i{display:block;height:100%;border-radius:6px;transition:width .6s ease}
+
+/* 时间线 */
+.timeline{position:relative;padding-left:22px}
+.timeline::before{content:'';position:absolute;left:7px;top:6px;bottom:6px;width:2px;background:var(--line)}
+.tl-item{position:relative;padding-bottom:18px}
+.tl-item:last-child{padding-bottom:2px}
+.tl-item .node{position:absolute;left:-22px;top:2px;width:16px;height:16px;border-radius:50%;background:#fff;border:2px solid var(--brand);display:flex;align-items:center;justify-content:center}
+.tl-item .node svg{width:9px;height:9px;color:var(--brand)}
+.tl-item .n-mail{border-color:var(--blue)}.tl-item .n-mail svg{color:var(--blue)}
+.tl-item .n-chat{border-color:var(--green)}.tl-item .n-chat svg{color:var(--green)}
+.tl-item .n-meet{border-color:var(--violet)}.tl-item .n-meet svg{color:var(--violet)}
+.tl-item .tt{font-size:13px;font-weight:600}
+.tl-item .td{font-size:12px;color:var(--ink-2);margin-top:3px;line-height:1.55}
+.tl-item .tm{font-size:11px;color:var(--ink-3);margin-top:4px}
+
+/* 开关 */
+.switch{width:38px;height:21px;background:#d5d8e0;border-radius:20px;position:relative;transition:background .2s;flex-shrink:0;cursor:pointer}
+.switch::after{content:'';position:absolute;top:2.5px;left:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.switch.on{background:var(--brand)}
+.switch.on::after{left:19px}
+
+/* 自动化卡片 */
+.auto-card{display:flex;gap:14px;padding:17px 20px;border-bottom:1px solid var(--line-2);align-items:flex-start}
+.auto-card:last-child{border-bottom:none}
+.auto-card .ic{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.auto-card .ic svg{width:18px;height:18px}
+.auto-card .body{flex:1;min-width:0}
+.auto-card .bt{display:flex;align-items:center;gap:9px}
+.auto-card .bt b{font-size:13.5px}
+.auto-card .desc{font-size:12.5px;color:var(--ink-2);margin-top:4px;line-height:1.55}
+.auto-card .flow{display:flex;align-items:center;gap:7px;margin-top:10px;flex-wrap:wrap}
+.flow-step{font-size:11px;background:var(--line-2);color:var(--ink-2);padding:3.5px 10px;border-radius:6px;font-weight:600}
+.flow-arrow{color:var(--ink-3);font-size:11px}
+.auto-card .stat{font-size:11.5px;color:var(--ink-3);margin-top:9px}
+.auto-card .stat b{color:var(--ink);font-weight:700}
+
+/* 抽屉 */
+.overlay{position:fixed;inset:0;background:rgba(15,18,30,.42);backdrop-filter:blur(2px);opacity:0;pointer-events:none;transition:opacity .25s;z-index:90}
+.overlay.show{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:470px;max-width:94vw;background:#fff;z-index:95;transform:translateX(105%);transition:transform .32s cubic-bezier(.32,.72,.28,1);display:flex;flex-direction:column;box-shadow:-16px 0 48px rgba(16,24,40,.18)}
+.drawer.show{transform:none}
+.drawer-head{padding:22px 24px 18px;border-bottom:1px solid var(--line);display:flex;align-items:flex-start;gap:14px}
+.drawer-head .avatar{width:52px;height:52px;font-size:17px}
+.drawer-head .nm{font-size:17px;font-weight:800}
+.drawer-head .cp{font-size:12.5px;color:var(--ink-2);margin-top:3px}
+.drawer-head .close{margin-left:auto}
+.drawer-body{flex:1;overflow-y:auto;padding:20px 24px}
+.d-sec{margin-bottom:24px}
+.d-sec h4{font-size:11.5px;color:var(--ink-3);letter-spacing:1px;font-weight:700;margin-bottom:12px}
+.kv{display:grid;grid-template-columns:1fr 1fr;gap:11px 16px}
+.kv .k{font-size:11.5px;color:var(--ink-3)}
+.kv .v{font-size:13px;font-weight:600;margin-top:2px}
+.pref-tags{display:flex;flex-wrap:wrap;gap:7px}
+.pref-tags .tag{font-size:12px}
+
+/* 弹窗 */
+.modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:96;opacity:0;pointer-events:none;transition:opacity .22s}
+.modal.show{opacity:1;pointer-events:auto}
+.modal-box{background:#fff;border-radius:16px;width:440px;max-width:92vw;box-shadow:0 24px 64px rgba(16,24,40,.28);transform:scale(.96) translateY(10px);transition:transform .25s cubic-bezier(.32,.72,.28,1)}
+.modal.show .modal-box{transform:none}
+.modal-head{padding:19px 22px 0;display:flex;align-items:center;justify-content:space-between}
+.modal-head h3{font-size:15.5px;font-weight:700}
+.modal-body{padding:17px 22px 22px}
+.f-row{margin-bottom:13px}
+.f-row label{display:block;font-size:12px;font-weight:600;color:var(--ink-2);margin-bottom:6px}
+.f-row input,.f-row select,.f-row textarea{width:100%;border:1px solid var(--line);border-radius:9px;padding:9px 12px;font-size:13px;transition:border .15s,box-shadow .15s;background:#fff}
+.f-row input:focus,.f-row select:focus,.f-row textarea:focus{border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
+.f-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.modal-foot{display:flex;justify-content:flex-end;gap:10px;margin-top:6px}
+
+/* Toast */
+.toasts{position:fixed;bottom:24px;right:24px;z-index:120;display:flex;flex-direction:column;gap:9px}
+.toast{background:#16181d;color:#fff;padding:11px 17px;border-radius:11px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:9px;box-shadow:0 10px 30px rgba(0,0,0,.3);animation:toastIn .3s cubic-bezier(.32,.72,.28,1)}
+.toast svg{width:15px;height:15px;color:#4ade80;flex-shrink:0}
+@keyframes toastIn{from{opacity:0;transform:translateY(12px) scale(.95)}to{opacity:1;transform:none}}
+.toast.out{opacity:0;transform:translateX(20px);transition:all .3s}
+
+/* 报表布局 */
+.rep-grid{grid-template-columns:2fr 1fr}
+.rep-grid-2{grid-template-columns:1fr 1fr}
+.legend{display:flex;gap:16px;font-size:12px;color:var(--ink-2);flex-wrap:wrap}
+.legend i{width:9px;height:9px;border-radius:3px;display:inline-block;margin-right:5px}
+.rank-row{display:flex;align-items:center;gap:11px;padding:10px 20px;border-bottom:1px solid var(--line-2)}
+.rank-row:last-child{border:none}
+.rank-row .no{width:22px;height:22px;border-radius:7px;background:var(--line-2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--ink-2);flex-shrink:0}
+.rank-row .no.top{background:linear-gradient(135deg,#f59e0b,#f97316);color:#fff}
+.rank-row .avatar{width:30px;height:30px;font-size:11px}
+.rank-row .info{flex:1;min-width:0}
+.rank-row .info .n{font-size:12.5px;font-weight:600}
+.rank-row .info .p{font-size:11px;color:var(--ink-3);margin-top:1px}
+.rank-row .v{font-size:13px;font-weight:800}
+.feed-item{display:flex;gap:12px;padding:11px 20px;border-bottom:1px solid var(--line-2);align-items:flex-start}
+.feed-item:last-child{border:none}
+.feed-item .ic{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.feed-item .ic svg{width:14px;height:14px}
+.feed-item .tx{flex:1;font-size:12.5px;line-height:1.5}
+.feed-item .tx b{font-weight:700}
+.feed-item .tm{font-size:11px;color:var(--ink-3);white-space:nowrap;margin-top:2px}
+
+.page-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;gap:14px;flex-wrap:wrap}
+.page-head .lt h2{font-size:19px;font-weight:800;letter-spacing:-.3px}
+.page-head .lt p{font-size:12.5px;color:var(--ink-3);margin-top:3px}
+.page-head .acts{display:flex;gap:9px}
+.filter-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.seg{display:flex;background:var(--line-2);border-radius:9px;padding:3px;gap:2px}
+.seg button{padding:6px 13px;font-size:12.5px;font-weight:600;color:var(--ink-2);border-radius:7px;transition:all .15s}
+.seg button.on{background:#fff;color:var(--ink);box-shadow:var(--shadow)}
+
+.mini-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px}
+.mini-kpi{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 17px;display:flex;align-items:center;gap:13px}
+.mini-kpi .ic{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.mini-kpi .ic svg{width:17px;height:17px}
+.mini-kpi .v{font-size:19px;font-weight:800;letter-spacing:-.3px}
+.mini-kpi .l{font-size:11.5px;color:var(--ink-3);margin-top:1px}
+
+.empty{padding:40px;text-align:center;color:var(--ink-3);font-size:13px}
+
+.funnel-stage{display:flex;align-items:center;gap:13px;padding:9px 0}
+.funnel-stage .fl{width:86px;font-size:12.5px;font-weight:600;text-align:right;color:var(--ink-2)}
+.funnel-stage .fb{flex:1;display:flex;align-items:center;gap:10px}
+.funnel-stage .fbar{height:26px;border-radius:7px;display:flex;align-items:center;padding:0 11px;color:#fff;font-size:12px;font-weight:700;min-width:44px;transition:width .8s cubic-bezier(.32,.72,.28,1)}
+.funnel-stage .fv{font-size:12px;color:var(--ink-3);white-space:nowrap}
+
+@media(max-width:1180px){.kpi-grid{grid-template-columns:repeat(2,1fr)}.kanban{grid-template-columns:repeat(2,1fr)}.rep-grid,.rep-grid-2{grid-template-columns:1fr}.mini-kpis{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:820px){.sidebar{display:none}.main{margin-left:0}.kanban{grid-template-columns:1fr}.search{width:150px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- ============ 侧边栏 ============ -->
+  <aside class="sidebar">
+    <div class="side-logo">
+      <div class="mark">N</div>
+      <div><div class="name">Nebula CRM</div><div class="sub">ENTERPRISE</div></div>
+    </div>
+    <nav class="side-nav">
+      <div class="nav-group">概览</div>
+      <button class="nav-item active" data-page="dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+        数据看板
+      </button>
+      <div class="nav-group">客户运营</div>
+      <button class="nav-item" data-page="customers">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.2 3.4-5 6.5-5s5.7 1.8 6.5 5"/><circle cx="17" cy="9" r="2.5"/><path d="M16 14.6c2.6.3 4.7 2 5.5 5"/></svg>
+        客户与联系人
+      </button>
+      <button class="nav-item" data-page="pipeline">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 4h18l-6.5 8v6l-5 3v-9L3 4z"/></svg>
+        销售漏斗
+        <span class="badge" id="navDealBadge">8</span>
+      </button>
+      <div class="nav-group">自动化</div>
+      <button class="nav-item" data-page="automation">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M2 12h4M18 12h4M5 5l2.8 2.8M16.2 16.2 19 19M19 5l-2.8 2.8M7.8 16.2 5 19"/><circle cx="12" cy="12" r="3"/></svg>
+        营销与服务
+        <span class="badge" id="navTicketBadge">5</span>
+      </button>
+      <div class="nav-group">决策</div>
+      <button class="nav-item" data-page="reports">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg>
+        数据分析与报表
+      </button>
+    </nav>
+    <div class="side-user">
+      <div class="avatar" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">猫头</div>
+      <div><div class="n">欧猫头</div><div class="r">销售运营总监</div></div>
+    </div>
+  </aside>
+
+  <!-- ============ 主区域 ============ -->
+  <div class="main">
+    <header class="topbar">
+      <div>
+        <h1 id="topTitle">数据看板</h1>
+        <div class="crumb" id="topCrumb">实时掌握客户与销售全局动态</div>
+      </div>
+      <div class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="globalSearch" placeholder="搜索客户、联系人、商机…">
+      </div>
+      <button class="icon-btn" title="通知" onclick="toast('您有 3 条未读通知：2 个新工单、1 条合同审批')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 8-3 8h18s-3-1-3-8"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+        <span class="dot"></span>
+      </button>
+      <div class="avatar top-avatar" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)" onclick="toast('当前账号：欧猫头 · 销售运营总监')">猫头</div>
+    </header>
+
+    <main class="content">
+
+      <!-- ================= 看板 ================= -->
+      <section class="page active" id="page-dashboard">
+        <div class="page-head">
+          <div class="lt"><h2>早上好，猫头 👋</h2><p>这是今天业务的最新动态，数据更新于 09:30</p></div>
+          <div class="acts">
+            <button class="btn btn-ghost" onclick="toast('报表已导出至下载目录（示例）')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>导出</button>
+            <button class="btn btn-primary" onclick="openModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>新建客户</button>
+          </div>
+        </div>
+
+        <div class="grid kpi-grid" id="kpiGrid"></div>
+
+        <div class="grid" style="grid-template-columns:1.9fr 1fr;margin-top:16px">
+          <div class="card">
+            <div class="card-head">
+              <div><h3>销售业绩趋势</h3><div class="sub">近 12 个月成交额 vs 目标（万元）</div></div>
+              <div class="legend"><span><i style="background:#4f46e5"></i>实际成交</span><span><i style="background:#d4d7e2"></i>销售目标</span></div>
+            </div>
+            <div class="card-p" style="height:300px"><canvas id="chTrend"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div><h3>销售漏斗转化</h3><div class="sub">本季度商机阶段分布</div></div>
+              <button class="link-btn" onclick="goPage('pipeline')">查看漏斗</button></div>
+            <div class="card-p" id="dashFunnel"></div>
+          </div>
+        </div>
+
+        <div class="grid" style="grid-template-columns:1.4fr 1fr 1fr;margin-top:16px">
+          <div class="card">
+            <div class="card-head"><div><h3>最新客户互动</h3><div class="sub">跨团队实时同步，打破信息孤岛</div></div>
+              <button class="link-btn" onclick="goPage('customers')">全部客户</button></div>
+            <div id="dashFeed"></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div><h3>销售业绩榜</h3><div class="sub">本月成交额 TOP 5</div></div></div>
+            <div id="dashRank"></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div><h3>待办提醒</h3><div class="sub">自动化引擎生成</div></div>
+              <button class="link-btn" onclick="goPage('automation')">自动化</button></div>
+            <div id="dashTodo"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 客户与联系人 ================= -->
+      <section class="page" id="page-customers">
+        <div class="page-head">
+          <div class="lt"><h2>客户与联系人</h2><p>统一存储客户档案、偏好与全渠道互动记录</p></div>
+          <div class="acts">
+            <button class="btn btn-ghost" onclick="toast('已同步企业微信 / 邮件渠道互动记录')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 3v6h-6"/></svg>同步互动记录</button>
+            <button class="btn btn-primary" onclick="openModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>新建客户</button>
+          </div>
+        </div>
+        <div class="mini-kpis" id="custKpis"></div>
+        <div class="card">
+          <div class="card-head" style="gap:12px;flex-wrap:wrap">
+            <div class="filter-bar">
+              <div class="seg" id="segStage">
+                <button class="on" data-f="all">全部</button>
+                <button data-f="成交客户">成交客户</button>
+                <button data-f="意向客户">意向客户</button>
+                <button data-f="潜在客户">潜在客户</button>
+              </div>
+              <div class="seg" id="segIndustry">
+                <button class="on" data-f="all">全部行业</button>
+                <button data-f="科技">科技</button>
+                <button data-f="制造">制造</button>
+                <button data-f="金融">金融</button>
+                <button data-f="零售">零售</button>
+              </div>
+            </div>
+            <div class="search" style="margin-left:auto;width:220px">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+              <input id="custSearch" placeholder="搜索客户 / 联系人…">
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr>
+                <th>客户 / 公司</th><th>主要联系人</th><th>行业</th><th>客户阶段</th><th>累计成交额</th><th>最近互动</th><th>负责人</th><th></th>
+              </tr></thead>
+              <tbody id="custTbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 销售漏斗 ================= -->
+      <section class="page" id="page-pipeline">
+        <div class="page-head">
+          <div class="lt"><h2>销售自动化与漏斗管理</h2><p>拖拽卡片即可更新商机阶段，阶段转化率实时重算</p></div>
+          <div class="acts">
+            <button class="btn btn-ghost" onclick="toast('已开启「阶段停滞 > 7 天」自动提醒负责人')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/><circle cx="12" cy="12" r="3"/></svg>自动化规则</button>
+            <button class="btn btn-primary" onclick="addDeal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>新建商机</button>
+          </div>
+        </div>
+        <div class="mini-kpis" id="pipeKpis"></div>
+        <div class="kanban" id="kanban"></div>
+        <div class="card" style="margin-top:16px">
+          <div class="card-head"><div><h3>阶段转化率分析</h3><div class="sub">初步接触 → 需求确认 → 商务谈判 → 合同签订</div></div></div>
+          <div class="card-p" style="height:230px"><canvas id="chConvert"></canvas></div>
+        </div>
+      </section>
+
+      <!-- ================= 营销与服务自动化 ================= -->
+      <section class="page" id="page-automation">
+        <div class="page-head">
+          <div class="lt"><h2>营销与服务自动化</h2><p>自动触发营销触达与跟进提醒，工单智能分配</p></div>
+          <div class="acts">
+            <button class="btn btn-primary" onclick="toast('已打开自动化流程编辑器（示例）')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>新建自动化流程</button>
+          </div>
+        </div>
+        <div class="mini-kpis" id="autoKpis"></div>
+        <div class="grid rep-grid-2">
+          <div class="card">
+            <div class="card-head"><div><h3>营销自动化流程</h3><div class="sub">开关即可启用 / 暂停</div></div>
+              <span class="tag tag-green" id="autoOnTag"></span></div>
+            <div id="autoList"></div>
+          </div>
+          <div>
+            <div class="card">
+              <div class="card-head"><div><h3>营销活动效果</h3><div class="sub">近 6 个月邮件营销触达</div></div></div>
+              <div class="card-p" style="height:215px"><canvas id="chCampaign"></canvas></div>
+            </div>
+            <div class="card" style="margin-top:16px">
+              <div class="card-head"><div><h3>服务工单渠道分布</h3><div class="sub">本月工单来源</div></div></div>
+              <div class="card-p" style="height:190px"><canvas id="chTicketSrc"></canvas></div>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:16px">
+          <div class="card-head" style="gap:12px;flex-wrap:wrap">
+            <div><h3>售后服务工单</h3><div class="sub">记录、分配并追踪客户服务请求</div></div>
+            <div class="seg" id="segTicket" style="margin-left:auto">
+              <button class="on" data-f="all">全部</button>
+              <button data-f="待处理">待处理</button>
+              <button data-f="处理中">处理中</button>
+              <button data-f="已解决">已解决</button>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="addTicket()">+ 新建工单</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>工单编号</th><th>客户</th><th>问题描述</th><th>优先级</th><th>状态</th><th>受理人</th><th>创建时间</th><th>操作</th></tr></thead>
+              <tbody id="ticketTbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 数据分析与报表 ================= -->
+      <section class="page" id="page-reports">
+        <div class="page-head">
+          <div class="lt"><h2>数据分析与报表</h2><p>实时销售预测、业绩看板与市场趋势，辅助企业决策</p></div>
+          <div class="acts">
+            <div class="seg" id="segRange">
+              <button data-f="Q1">Q1</button><button data-f="Q2">Q2</button><button class="on" data-f="Q3">Q3</button><button data-f="全年">全年</button>
+            </div>
+            <button class="btn btn-ghost" onclick="toast('已生成 PDF 分析报告（示例）')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>导出报告</button>
+          </div>
+        </div>
+        <div class="grid rep-grid">
+          <div class="card">
+            <div class="card-head">
+              <div><h3>销售预测</h3><div class="sub">基于漏斗加权概率的 Q3-Q4 成交额预测（万元）</div></div>
+              <div class="legend"><span><i style="background:#4f46e5"></i>加权预测</span><span><i style="background:#22c55e"></i>保底预测</span><span><i style="background:#f59e0b"></i>冲刺目标</span></div>
+            </div>
+            <div class="card-p" style="height:290px"><canvas id="chForecast"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div><h3>预测摘要</h3><div class="sub">AI 引擎生成</div></div></div>
+            <div class="card-p" id="forecastSummary"></div>
+          </div>
+        </div>
+        <div class="grid rep-grid-2" style="margin-top:16px">
+          <div class="card">
+            <div class="card-head"><div><h3>团队业绩看板</h3><div class="sub">本季度目标完成率（%）</div></div></div>
+            <div class="card-p" style="height:260px"><canvas id="chPerf"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div><h3>市场趋势分析</h3><div class="sub">各行业线索量同比走势（指数化）</div></div>
+              <div class="legend"><span><i style="background:#4f46e5"></i>科技</span><span><i style="background:#22c55e"></i>制造</span><span><i style="background:#f59e0b"></i>金融</span><span><i style="background:#ec4899"></i>零售</span></div></div>
+            <div class="card-p" style="height:260px"><canvas id="chMarket"></canvas></div>
+          </div>
+        </div>
+        <div class="grid" style="grid-template-columns:1fr 1.6fr;margin-top:16px">
+          <div class="card">
+            <div class="card-head"><div><h3>客户行业分布</h3><div class="sub">按累计成交额占比</div></div></div>
+            <div class="card-p" style="height:250px"><canvas id="chIndustry"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div><h3>关键业务洞察</h3><div class="sub">系统基于数据自动生成</div></div></div>
+            <div id="insightList"></div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- ============ 客户详情抽屉 ============ -->
+<div class="overlay" id="overlay" onclick="closeDrawer()"></div>
+<aside class="drawer" id="drawer">
+  <div class="drawer-head" id="drawerHead"></div>
+  <div class="drawer-body" id="drawerBody"></div>
+</aside>
+
+<!-- ============ 新建客户弹窗 ============ -->
+<div class="modal" id="modal">
+  <div class="modal-box">
+    <div class="modal-head"><h3>新建客户</h3>
+      <button class="icon-btn" onclick="closeModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="f-row"><label>公司名称 *</label><input id="fCompany" placeholder="例：云启智能科技有限公司"></div>
+      <div class="f-2">
+        <div class="f-row"><label>主要联系人</label><input id="fContact" placeholder="例：陈经理"></div>
+        <div class="f-row"><label>行业</label>
+          <select id="fIndustry"><option>科技</option><option>制造</option><option>金融</option><option>零售</option><option>医疗</option><option>教育</option></select></div>
+      </div>
+      <div class="f-2">
+        <div class="f-row"><label>客户阶段</label>
+          <select id="fStage"><option>潜在客户</option><option>意向客户</option><option>成交客户</option></select></div>
+        <div class="f-row"><label>负责人</label>
+          <select id="fOwner"><option>林晓彤</option><option>赵启铭</option><option>陈思远</option><option>周沐阳</option><option>欧猫头</option></select></div>
+      </div>
+      <div class="f-row"><label>客户偏好 / 备注</label><textarea id="fPref" rows="2" placeholder="例：偏好邮件沟通，关注数据安全与私有化部署"></textarea></div>
+      <div class="modal-foot">
+        <button class="btn btn-ghost" onclick="closeModal()">取消</button>
+        <button class="btn btn-primary" onclick="saveCustomer()">保存客户</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toasts" id="toasts"></div>
+<script>
+/* ==================== 示例数据 ==================== */
+const OWNERS = {
+  '林晓彤':['#6366f1','#8b5cf6'], '赵启铭':['#0ea5e9','#2563eb'],
+  '陈思远':['#f59e0b','#f97316'], '周沐阳':['#10b981','#0d9488'], '欧猫头':['#ec4899','#8b5cf6']
+};
+const avatarHTML = (name,size)=>{const c=OWNERS[name]||['#64748b','#94a3b8'];const t=name.slice(-2);
+  return `<div class="avatar" style="background:linear-gradient(135deg,${c[0]},${c[1]});${size?`width:${size}px;height:${size}px;font-size:${size*0.36}px`:''}">${t}</div>`};
+
+let customers = [
+ {id:1,company:'云启智能科技有限公司',contact:'沈望舒',role:'技术总监',industry:'科技',stage:'成交客户',amount:486000,phone:'138-0219-7766',email:'shen.ws@yunqi.tech',city:'上海',owner:'林晓彤',last:'今天 09:12',lastType:'电话',
+  prefs:['偏好邮件沟通','关注数据安全','私有化部署','季度汇报'],
+  timeline:[
+   {type:'call',title:'电话回访 · 续约意向确认',desc:'确认二期扩容需求，预算约 ¥20 万，预计下月启动采购流程。',time:'今天 09:12'},
+   {type:'mail',title:'邮件 · 发送二期报价方案',desc:'发送《Nebula 平台二期扩容报价单 v2》，抄送其采购部。',time:'昨天 16:40'},
+   {type:'chat',title:'企业微信 · 咨询 API 并发配额',desc:'客户询问高峰时段 API 调用配额，已答复并附上扩容文档。',time:'3 天前'},
+   {type:'meet',title:'现场拜访 · 年度服务回顾',desc:'与沈总监及运维团队进行 Q2 服务回顾，满意度评分 4.8/5。',time:'2 周前'}]},
+ {id:2,company:'星澜零售集团',contact:'顾清和',role:'电商负责人',industry:'零售',stage:'意向客户',amount:128000,phone:'137-5562-0091',email:'gu.qh@xinglan.com',city:'杭州',owner:'赵启铭',last:'昨天 15:03',lastType:'邮件',
+  prefs:['大促前密集沟通','关注 ROI 数据','需要案例参考'],
+  timeline:[
+   {type:'mail',title:'邮件 · 发送同行业案例集',desc:'发送零售行业 3 个标杆案例，客户表示对会员营销模块兴趣浓厚。',time:'昨天 15:03'},
+   {type:'call',title:'电话 · 需求初步确认',desc:'确认痛点为会员复购率低，希望接入自动化营销触达。',time:'5 天前'},
+   {type:'chat',title:'微信 · 添加联系人',desc:'展会现场扫码建立联系，约定本周需求调研电话。',time:'1 周前'}]},
+ {id:3,company:'恒远精密制造',contact:'梁其琛',role:'信息化主管',industry:'制造',stage:'成交客户',amount:352000,phone:'139-8810-3345',email:'liang.qc@hengyuan.cn',city:'苏州',owner:'陈思远',last:'今天 08:47',lastType:'工单',
+  prefs:['重视售后响应速度','偏好电话沟通','需驻场培训'],
+  timeline:[
+   {type:'chat',title:'工单 · 报表导出异常',desc:'客户反馈自定义报表导出格式错乱，已生成工单 #TK-1024 并转交技术支持。',time:'今天 08:47'},
+   {type:'call',title:'电话 · 月度使用情况回访',desc:'整体使用平稳，提出希望增加车间看板移动端适配。',time:'6 天前'},
+   {type:'meet',title:'驻场培训 · 第二批管理员',desc:'完成 12 名车间管理员的系统操作培训。',time:'3 周前'}]},
+ {id:4,company:'明德资本',contact:'苏令仪',role:'运营合伙人',industry:'金融',stage:'意向客户',amount:0,phone:'136-7745-2210',email:'su.ly@mingde.capital',city:'北京',owner:'林晓彤',last:'2 天前',lastType:'会议',
+  prefs:['合规要求严格','决策链较长','偏好线下会议'],
+  timeline:[
+   {type:'meet',title:'线下会议 · 产品演示',desc:'向投委会演示被投企业管理看板，重点关注权限与审计日志。',time:'2 天前'},
+   {type:'mail',title:'邮件 · 发送安全白皮书',desc:'应客户要求发送 SOC2 合规说明与数据加密白皮书。',time:'1 周前'}]},
+ {id:5,company:'青禾生物科技',contact:'韩沐宸',role:'采购经理',industry:'科技',stage:'潜在客户',amount:0,phone:'135-9902-6678',email:'han.mc@qinghe.bio',city:'成都',owner:'周沐阳',last:'4 天前',lastType:'电话',
+  prefs:['价格敏感','需要试用期','线上演示优先'],
+  timeline:[
+   {type:'call',title:'电话 · 首次触达',desc:'介绍产品核心功能，客户申请 14 天试用账号。',time:'4 天前'},
+   {type:'mail',title:'邮件 · 开通试用并发送指南',desc:'已开通试用环境，发送《快速上手指南》。',time:'4 天前'}]},
+ {id:6,company:'澜庭酒店管理集团',contact:'温书瑶',role:'市场总监',industry:'零售',stage:'成交客户',amount:96000,phone:'138-3301-8892',email:'wen.sy@lantinghotels.com',city:'三亚',owner:'赵启铭',last:'昨天 11:26',lastType:'聊天',
+  prefs:['重视客户满意度数据','需要多门店权限','偏好移动端'],
+  timeline:[
+   {type:'chat',title:'微信 · 会员活动配置协助',desc:'协助配置暑期会员积分活动自动化流程，已上线。',time:'昨天 11:26'},
+   {type:'mail',title:'邮件 · 发送月度营销报告',desc:'6 月会员唤醒活动打开率 34.2%，高于行业均值。',time:'1 周前'}]},
+ {id:7,company:'北辰物流股份',contact:'秦峥',role:'IT 经理',industry:'制造',stage:'意向客户',amount:0,phone:'137-2145-9034',email:'qin.z@beichen56.com',city:'天津',owner:'陈思远',last:'3 天前',lastType:'邮件',
+  prefs:['关注系统集成能力','已有 ERP 需对接','预算审批中'],
+  timeline:[
+   {type:'mail',title:'邮件 · 发送 ERP 对接方案',desc:'提供与 SAP 的标准接口方案与实施周期评估。',time:'3 天前'},
+   {type:'call',title:'电话 · 商务条款沟通',desc:'客户希望按网点数阶梯报价，待内部测算后回复。',time:'1 周前'}]},
+ {id:8,company:'白泽网络安全',contact:'陆昭宁',role:'CEO',industry:'科技',stage:'潜在客户',amount:0,phone:'139-6678-1123',email:'lu.zn@baize.sec',city:'深圳',owner:'周沐阳',last:'1 周前',lastType:'会议',
+  prefs:['决策者直接对接','注重产品细节','技术导向'],
+  timeline:[
+   {type:'meet',title:'线上演示 · CEO 专场',desc:'CEO 亲自参加演示，对销售漏斗预测功能评价积极。',time:'1 周前'},
+   {type:'chat',title:'微信 · 发送产品更新日志',desc:'发送 v4.2 更新说明，约定两周后二次沟通。',time:'1 周前'}]}
+];
+
+const STAGES = [
+ {key:'初步接触',color:'#64748b'},
+ {key:'需求确认',color:'#2563eb'},
+ {key:'商务谈判',color:'#f59e0b'},
+ {key:'合同签订',color:'#0ea968'}
+];
+let deals = [
+ {id:'D-01',co:'青禾生物科技',amt:86000, owner:'周沐阳', stage:'初步接触', prob:15, due:'7月28日'},
+ {id:'D-02',co:'白泽网络安全',amt:150000,owner:'周沐阳', stage:'初步接触', prob:20, due:'8月2日'},
+ {id:'D-03',co:'星澜零售集团',amt:220000,owner:'赵启铭', stage:'需求确认', prob:40, due:'7月25日'},
+ {id:'D-04',co:'明德资本',   amt:380000,owner:'林晓彤', stage:'需求确认', prob:45, due:'8月6日'},
+ {id:'D-05',co:'北辰物流股份',amt:260000,owner:'陈思远', stage:'商务谈判', prob:65, due:'7月24日'},
+ {id:'D-06',co:'云启智能科技',amt:200000,owner:'林晓彤', stage:'商务谈判', prob:70, due:'7月31日'},
+ {id:'D-07',co:'恒远精密制造',amt:120000,owner:'陈思远', stage:'合同签订', prob:95, due:'已完成'},
+ {id:'D-08',co:'澜庭酒店集团',amt:98000, owner:'赵启铭', stage:'合同签订', prob:100,due:'已完成'}
+];
+
+let automations = [
+ {icon:'mail',color:'blue',name:'新线索培育邮件序列',desc:'新线索入库后自动发送欢迎邮件，随后按 3/7/14 天节奏推送产品资料与案例，未打开则转入人工跟进队列。',
+  steps:['线索入库','欢迎邮件','+3天 产品手册','+7天 行业案例','+14天 试用邀请'],stat:'本月触达 <b>1,286</b> 人 · 平均打开率 <b>38.5%</b> · 转化线索 <b>46</b> 条',on:true},
+ {icon:'bell',color:'amber',name:'商机跟进提醒',desc:'商机超过 7 天无更新时，自动提醒负责人并抄送主管；超过 14 天标记为「停滞风险」并生成挽回任务。',
+  steps:['监听商机动态','停滞 >7天','提醒负责人','停滞 >14天','生成挽回任务'],stat:'本月触发提醒 <b>23</b> 次 · 挽回停滞商机 <b>7</b> 个',on:true},
+ {icon:'heart',color:'violet',name:'成交后客户关怀',desc:'合同签订后自动创建 onboarding 任务，第 30/90 天触发满意度回访，低分客户自动生成服务工单。',
+  steps:['合同签订','Onboarding 任务','30天 回访','90天 满意度调查','低分 → 生成工单'],stat:'本季度完成回访 <b>58</b> 次 · 满意度 <b>4.6/5</b>',on:true},
+ {icon:'refresh',color:'green',name:'沉默客户唤醒',desc:'90 天无互动的客户自动进入唤醒流程，推送优惠与新功能介绍，唤醒失败则降级为公海线索。',
+  steps:['识别沉默客户','唤醒邮件 + 短信','销售外呼','无效 → 公海'],stat:'上月唤醒客户 <b>19</b> 家 · 重新激活 <b>5</b> 家',on:false}
+];
+
+let tickets = [
+ {id:'TK-1024',cust:'恒远精密制造',desc:'自定义报表导出格式错乱',pri:'高',st:'处理中',assignee:'技术支持·吴一凡',time:'今天 08:47'},
+ {id:'TK-1023',cust:'云启智能科技',desc:'API 高峰期偶发超时，需扩容评估',pri:'高',st:'处理中',assignee:'技术支持·郑凯文',time:'昨天 17:20'},
+ {id:'TK-1022',cust:'澜庭酒店集团',desc:'申请新增 3 家门店子账号权限',pri:'中',st:'待处理',assignee:'未分配',time:'昨天 14:05'},
+ {id:'TK-1021',cust:'星澜零售集团',desc:'会员标签同步延迟约 2 小时',pri:'中',st:'处理中',assignee:'技术支持·吴一凡',time:'2 天前'},
+ {id:'TK-1020',cust:'明德资本',desc:'审计日志保留周期咨询',pri:'低',st:'待处理',assignee:'未分配',time:'2 天前'},
+ {id:'TK-1019',cust:'青禾生物科技',desc:'试用环境登录验证码收不到',pri:'高',st:'已解决',assignee:'客户成功·许安然',time:'3 天前'},
+ {id:'TK-1018',cust:'北辰物流股份',desc:'ERP 对接沙箱环境申请',pri:'中',st:'已解决',assignee:'技术支持·郑凯文',time:'4 天前'},
+ {id:'TK-1017',cust:'澜庭酒店集团',desc:'积分活动规则配置协助',pri:'低',st:'已解决',assignee:'客户成功·许安然',time:'5 天前'}
+];
+
+/* ==================== 工具函数 ==================== */
+const $ = s=>document.querySelector(s);
+const $$ = s=>document.querySelectorAll(s);
+const fmt = n=>'¥'+n.toLocaleString();
+const fmtW = n=>(n/10000).toFixed(1)+' 万';
+
+function toast(msg){
+  const t=document.createElement('div');t.className='toast';
+  t.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg><span>${msg}</span>`;
+  $('#toasts').appendChild(t);
+  setTimeout(()=>{t.classList.add('out');setTimeout(()=>t.remove(),320)},2600);
+}
+
+/* ==================== 页面切换 ==================== */
+const PAGES = {
+  dashboard:['数据看板','实时掌握客户与销售全局动态'],
+  customers:['客户与联系人','统一客户档案 · 偏好 · 全渠道互动记录'],
+  pipeline:['销售自动化与漏斗管理','初步接触 → 需求确认 → 商务谈判 → 合同签订'],
+  automation:['营销与服务自动化','自动营销触达 · 跟进提醒 · 售后工单分配'],
+  reports:['数据分析与报表','销售预测 · 业绩看板 · 市场趋势']
+};
+const inited = {};
+function goPage(p){
+  $$('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.page===p));
+  $$('.page').forEach(s=>s.classList.toggle('active',s.id==='page-'+p));
+  $('#topTitle').textContent=PAGES[p][0];
+  $('#topCrumb').textContent=PAGES[p][1];
+  window.scrollTo({top:0});
+  if(!inited[p]){inited[p]=true;setTimeout(()=>initCharts(p),60)}
+  if(p==='dashboard'){inited.dashboard=true;setTimeout(()=>initCharts('dashboard'),60)}
+}
+$$('.nav-item').forEach(b=>b.addEventListener('click',()=>goPage(b.dataset.page)));
+
+/* ==================== 看板渲染 ==================== */
+function renderKPIs(){
+  const kpis=[
+   {label:'客户总数',v:customers.length+'<small style="font-size:13px;color:var(--ink-3);font-weight:600"> 家</small>',t:'+12.5%',up:true,s:'较上月',c:'#4f46e5',bg:'var(--brand-soft)',icon:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.2 3.4-5 6.5-5s5.7 1.8 6.5 5"/><circle cx="17" cy="9" r="2.5"/>'},
+   {label:'在途商机总额',v:fmtW(deals.filter(d=>d.stage!=='合同签订').reduce((s,d)=>s+d.amt,0)),t:'+8.3%',up:true,s:'较上月',c:'#2563eb',bg:'var(--blue-soft)',icon:'<path d="M3 4h18l-6.5 8v6l-5 3v-9L3 4z"/>'},
+   {label:'本季度成交率',v:'34.2%',t:'+4.1pt',up:true,s:'环比 Q2',c:'#0ea968',bg:'var(--green-soft)',icon:'<path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/>'},
+   {label:'待处理工单',v:tickets.filter(t=>t.st==='待处理').length+'<small style="font-size:13px;color:var(--ink-3);font-weight:600"> 件</small>',t:'-18%',up:true,s:'SLA 达标率 96%',c:'#d97706',bg:'var(--amber-soft)',icon:'<path d="M4 5h16v11H8l-4 4V5z"/>'}
+  ];
+  $('#kpiGrid').innerHTML=kpis.map(k=>`
+   <div class="card kpi">
+     <div class="label"><span class="ic" style="background:${k.bg};color:${k.c}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${k.icon}</svg></span>${k.label}</div>
+     <div class="value">${k.v}</div>
+     <div class="trend ${k.up?'up':'down'}">${k.up?'▲':'▼'} ${k.t}<span>${k.s}</span></div>
+   </div>`).join('');
+}
+function renderDashFunnel(){
+  const counts=STAGES.map(s=>deals.filter(d=>d.stage===s.key));
+  const max=Math.max(...counts.map(c=>c.length));
+  const conv=['100%','62%','48%','33%'];
+  $('#dashFunnel').innerHTML=STAGES.map((s,i)=>{
+    const list=counts[i], amt=list.reduce((x,d)=>x+d.amt,0);
+    return `<div class="funnel-stage">
+      <div class="fl">${s.key}</div>
+      <div class="fb"><div class="fbar" style="width:${Math.max(list.length/max*100,12)}%;background:linear-gradient(90deg,${s.color},${s.color}cc)">${list.length} 个</div>
+      <div class="fv">${fmtW(amt)} · 转化 ${conv[i]}</div></div></div>`;
+  }).join('')+`<div style="margin-top:14px;padding-top:13px;border-top:1px dashed var(--line);font-size:12px;color:var(--ink-3)">
+    本季度整体赢单率 <b style="color:var(--ink)">33%</b>，高于团队目标值 <b style="color:var(--green)">+3pt</b></div>`;
+}
+function renderDashFeed(){
+  const items=[
+   {c:'var(--blue-soft)',col:'var(--blue)',icon:'<path d="M4 5h16v12H4z"/><path d="m4 7 8 6 8-6"/>',tx:'<b>林晓彤</b> 向 <b>云启智能科技</b> 发送了二期扩容报价单',tm:'20 分钟前'},
+   {c:'var(--amber-soft)',col:'var(--amber)',icon:'<path d="M4 5h16v11H8l-4 4V5z"/>',tx:'<b>恒远精密制造</b> 提交了工单 <b>#TK-1024</b>，已自动分配给技术支持',tm:'43 分钟前'},
+   {c:'var(--green-soft)',col:'var(--green)',icon:'<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.13.96.36 1.9.7 2.8a2 2 0 0 1-.45 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.45c.9.34 1.84.57 2.8.7A2 2 0 0 1 22 16.9z"/>',tx:'<b>周沐阳</b> 与 <b>青禾生物科技</b> 完成首次需求电话，试用账号已开通',tm:'2 小时前'},
+   {c:'var(--violet-soft)',col:'var(--violet)',icon:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',tx:'自动化引擎提醒：<b>北辰物流股份</b> 商机已 5 天未更新，请尽快跟进',tm:'3 小时前'},
+   {c:'var(--green-soft)',col:'var(--green)',icon:'<path d="M20 6 9 17l-5-5"/>',tx:'<b>陈思远</b> 将 <b>恒远精密制造</b> 的增购商机推进至「合同签订」',tm:'昨天 18:32'},
+   {c:'var(--blue-soft)',col:'var(--blue)',icon:'<path d="M21 11.5a8.4 8.4 0 0 1-8.5 8.4 8.6 8.6 0 0 1-3.8-.85L3 21l1.95-5.7A8.4 8.4 0 1 1 21 11.5z"/>',tx:'<b>赵启铭</b> 在企业微信回复了 <b>澜庭酒店集团</b> 的活动配置咨询',tm:'昨天 11:26'}
+  ];
+  $('#dashFeed').innerHTML=items.map(i=>`<div class="feed-item">
+    <div class="ic" style="background:${i.c};color:${i.col}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${i.icon}</svg></div>
+    <div class="tx">${i.tx}</div><div class="tm">${i.tm}</div></div>`).join('');
+}
+function renderDashRank(){
+  const rank=[['林晓彤','云启 · 明德','¥486,000',1],['陈思远','恒远 · 北辰','¥472,000',2],['赵启铭','星澜 · 澜庭','¥224,000',3],['周沐阳','青禾 · 白泽','¥96,000',4],['欧猫头','运营支持','¥58,000',5]];
+  $('#dashRank').innerHTML=rank.map((r,i)=>`<div class="rank-row">
+    <div class="no ${i<2?'top':''}">${i+1}</div>${avatarHTML(r[0],30)}
+    <div class="info"><div class="n">${r[0]}</div><div class="p">${r[1]}</div></div>
+    <div class="v mono">${r[2]}</div></div>`).join('');
+}
+function renderDashTodo(){
+  const todos=[
+   {tag:'tag-red',t:'紧急',tx:'#TK-1024 报表导出异常待技术修复'},
+   {tag:'tag-amber',t:'今日',tx:'14:00 与星澜零售集团的需求确认会议'},
+   {tag:'tag-amber',t:'今日',tx:'北辰物流商务谈判方案终稿提交'},
+   {tag:'tag-blue',t:'明日',tx:'云启智能二期扩容合同用印审批'},
+   {tag:'tag-gray',t:'本周',tx:'明德资本 POC 环境安全检查'}
+  ];
+  $('#dashTodo').innerHTML=todos.map(i=>`<div class="feed-item" style="align-items:center;cursor:pointer" onclick="toast('已标记为处理中（示例）')">
+    <span class="tag ${i.tag}">${i.t}</span><div class="tx" style="font-size:12.5px">${i.tx}</div></div>`).join('');
+}
+
+/* ==================== 客户管理 ==================== */
+let fStage='all', fInd='all', fKw='';
+function custKpis(){
+  const data=[
+   {l:'客户总数',v:customers.length,c:'#4f46e5',bg:'var(--brand-soft)',icon:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.2 3.4-5 6.5-5s5.7 1.8 6.5 5"/><circle cx="17" cy="9" r="2.5"/>'},
+   {l:'本月新增',v:3,c:'#2563eb',bg:'var(--blue-soft)',icon:'<path d="M12 5v14M5 12h14"/>'},
+   {l:'活跃互动客户',v:6,c:'#0ea968',bg:'var(--green-soft)',icon:'<path d="M21 11.5a8.4 8.4 0 0 1-8.5 8.4 8.6 8.6 0 0 1-3.8-.85L3 21l1.95-5.7A8.4 8.4 0 1 1 21 11.5z"/>'},
+   {l:'累计成交额',v:fmtW(customers.reduce((s,c)=>s+c.amount,0)),c:'#d97706',bg:'var(--amber-soft)',icon:'<path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/>'}
+  ];
+  $('#custKpis').innerHTML=data.map(k=>`<div class="mini-kpi">
+    <div class="ic" style="background:${k.bg};color:${k.c}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${k.icon}</svg></div>
+    <div><div class="v">${k.v}</div><div class="l">${k.l}</div></div></div>`).join('');
+}
+const stageTag = s=>s==='成交客户'?'tag-green':s==='意向客户'?'tag-blue':'tag-gray';
+function renderCustomers(){
+  custKpis();
+  const list=customers.filter(c=>
+    (fStage==='all'||c.stage===fStage)&&(fInd==='all'||c.industry===fInd)&&
+    (!fKw||c.company.includes(fKw)||c.contact.includes(fKw)));
+  $('#custTbody').innerHTML=list.length?list.map(c=>`<tr class="row-click" onclick="openDrawer(${c.id})">
+    <td><div class="cell-main">${avatarHTML(c.owner,34)}<div><div class="t1">${c.company}</div><div class="t2">${c.city} · ${c.industry}</div></div></div></td>
+    <td><div class="t1">${c.contact}</div><div class="t2" style="font-size:11.5px;color:var(--ink-3)">${c.role}</div></td>
+    <td><span class="tag tag-gray">${c.industry}</span></td>
+    <td><span class="tag ${stageTag(c.stage)}">${c.stage}</span></td>
+    <td class="mono" style="font-weight:700">${c.amount?fmt(c.amount):'—'}</td>
+    <td><span class="tag tag-violet">${c.lastType}</span> <span style="font-size:12px;color:var(--ink-3)">${c.last}</span></td>
+    <td style="font-size:12.5px">${c.owner}</td>
+    <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openDrawer(${c.id})">详情</button></td>
+  </tr>`).join(''):`<tr><td colspan="8"><div class="empty">未找到匹配的客户，试试调整筛选条件</div></td></tr>`;
+}
+$('#segStage').addEventListener('click',e=>{if(e.target.dataset.f){$$('#segStage button').forEach(b=>b.classList.toggle('on',b===e.target));fStage=e.target.dataset.f;renderCustomers()}});
+$('#segIndustry').addEventListener('click',e=>{if(e.target.dataset.f){$$('#segIndustry button').forEach(b=>b.classList.toggle('on',b===e.target));fInd=e.target.dataset.f;renderCustomers()}});
+$('#custSearch').addEventListener('input',e=>{fKw=e.target.value.trim();renderCustomers()});
+$('#globalSearch').addEventListener('input',e=>{
+  const kw=e.target.value.trim();
+  if(!kw)return;
+  goPage('customers');fKw=kw;$('#custSearch').value=kw;renderCustomers();
+});
+$('#globalSearch').addEventListener('keydown',e=>{if(e.key==='Enter'){goPage('customers');fKw=e.target.value.trim();$('#custSearch').value=fKw;renderCustomers()}});
+
+/* ---------- 客户详情抽屉 ---------- */
+const TL_META={call:['n-call','电话','<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.13.96.36 1.9.7 2.8a2 2 0 0 1-.45 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.45c.9.34 1.84.57 2.8.7A2 2 0 0 1 22 16.9z"/>'],
+ mail:['n-mail','邮件','<path d="M4 5h16v12H4z"/><path d="m4 7 8 6 8-6"/>'],
+ chat:['n-chat','聊天','<path d="M21 11.5a8.4 8.4 0 0 1-8.5 8.4 8.6 8.6 0 0 1-3.8-.85L3 21l1.95-5.7A8.4 8.4 0 1 1 21 11.5z"/>'],
+ meet:['n-meet','会议','<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>']};
+function openDrawer(id){
+  const c=customers.find(x=>x.id===id);if(!c)return;
+  $('#drawerHead').innerHTML=`${avatarHTML(c.owner,52)}
+    <div><div class="nm">${c.company}</div>
+    <div class="cp">${c.contact} · ${c.role} &nbsp;|&nbsp; ${c.city}</div>
+    <div style="margin-top:8px;display:flex;gap:7px"><span class="tag ${stageTag(c.stage)}">${c.stage}</span><span class="tag tag-gray">${c.industry}</span></div></div>
+    <button class="icon-btn close" onclick="closeDrawer()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>`;
+  $('#drawerBody').innerHTML=`
+    <div class="d-sec"><h4>基础档案</h4><div class="kv">
+      <div><div class="k">联系电话</div><div class="v mono">${c.phone}</div></div>
+      <div><div class="k">电子邮箱</div><div class="v" style="word-break:break-all">${c.email}</div></div>
+      <div><div class="k">累计成交额</div><div class="v mono" style="color:var(--brand-ink)">${c.amount?fmt(c.amount):'暂无成交'}</div></div>
+      <div><div class="k">客户负责人</div><div class="v">${c.owner}</div></div>
+    </div></div>
+    <div class="d-sec"><h4>客户偏好</h4><div class="pref-tags">${c.prefs.map(p=>`<span class="tag tag-blue">${p}</span>`).join('')}</div></div>
+    <div class="d-sec"><h4>互动时间线 · 电话 / 邮件 / 聊天 / 会议 全渠道汇总</h4>
+      <div class="timeline">${c.timeline.map(t=>{const m=TL_META[t.type];return `<div class="tl-item">
+        <div class="node ${m[0]}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">${m[2]}</svg></div>
+        <div class="tt">${t.title}</div><div class="td">${t.desc}</div><div class="tm">${m[1]} · ${t.time} · 记录人 ${c.owner}</div></div>`}).join('')}
+      </div></div>
+    <div style="display:flex;gap:9px">
+      <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="toast('已创建跟进任务并同步至团队日程（示例）')">+ 添加跟进记录</button>
+      <button class="btn btn-ghost" style="flex:1;justify-content:center" onclick="toast('已发起外呼（示例）')">拨打电话</button>
+    </div>`;
+  $('#overlay').classList.add('show');$('#drawer').classList.add('show');
+}
+function closeDrawer(){$('#overlay').classList.remove('show');$('#drawer').classList.remove('show')}
+
+/* ---------- 新建客户弹窗 ---------- */
+function openModal(){$('#modal').classList.add('show');setTimeout(()=>$('#fCompany').focus(),80)}
+function closeModal(){$('#modal').classList.remove('show')}
+$('#modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal()});
+function saveCustomer(){
+  const co=$('#fCompany').value.trim();
+  if(!co){toast('请填写公司名称');$('#fCompany').focus();return}
+  const nc={id:Date.now(),company:co,contact:$('#fContact').value.trim()||'待补充',role:'联系人',
+   industry:$('#fIndustry').value,stage:$('#fStage').value,amount:0,phone:'—',email:'—',city:'—',
+   owner:$('#fOwner').value,last:'刚刚',lastType:'记录',
+   prefs:($('#fPref').value.trim()?[$('#fPref').value.trim()]:['新录入客户']),
+   timeline:[{type:'chat',title:'客户建档',desc:'由 '+$('#fOwner').value+' 手动创建客户档案。',time:'刚刚'}]};
+  customers.unshift(nc);closeModal();renderCustomers();renderKPIs();
+  ['fCompany','fContact','fPref'].forEach(i=>$('#'+i).value='');
+  toast(`客户「${co}」已创建，团队档案实时同步`);
+}
+
+/* ==================== 销售漏斗看板 ==================== */
+function pipeKpis(){
+  const open=deals.filter(d=>d.stage!=='合同签订');
+  const won=deals.filter(d=>d.stage==='合同签订');
+  const data=[
+   {l:'在途商机',v:open.length+' 个',c:'#4f46e5',bg:'var(--brand-soft)',icon:'<path d="M3 4h18l-6.5 8v6l-5 3v-9L3 4z"/>'},
+   {l:'在途总金额',v:fmtW(open.reduce((s,d)=>s+d.amt,0)),c:'#2563eb',bg:'var(--blue-soft)',icon:'<path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>'},
+   {l:'加权预测金额',v:fmtW(open.reduce((s,d)=>s+d.amt*d.prob/100,0)),c:'#d97706',bg:'var(--amber-soft)',icon:'<path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/>'},
+   {l:'本季已成交',v:fmtW(won.reduce((s,d)=>s+d.amt,0)),c:'#0ea968',bg:'var(--green-soft)',icon:'<path d="M20 6 9 17l-5-5"/>'}
+  ];
+  $('#pipeKpis').innerHTML=data.map(k=>`<div class="mini-kpi">
+    <div class="ic" style="background:${k.bg};color:${k.c}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${k.icon}</svg></div>
+    <div><div class="v">${k.v}</div><div class="l">${k.l}</div></div></div>`).join('');
+}
+function renderKanban(){
+  pipeKpis();
+  $('#navDealBadge').textContent=deals.filter(d=>d.stage!=='合同签订').length;
+  $('#kanban').innerHTML=STAGES.map(s=>{
+    const list=deals.filter(d=>d.stage===s.key);
+    const sum=list.reduce((x,d)=>x+d.amt,0);
+    return `<div class="kcol" data-stage="${s.key}">
+      <div class="kcol-head"><span class="dot" style="background:${s.color}"></span>
+        <span class="name">${s.key}</span><span class="cnt">${list.length}</span>
+        <span class="sum">${fmtW(sum)}</span></div>
+      ${list.map(d=>`<div class="kcard" draggable="true" data-id="${d.id}">
+        <div class="co"><span>${d.co}</span><span class="tag" style="background:${s.color}18;color:${s.color}">${d.id}</span></div>
+        <div class="amt mono">${fmt(d.amt)}</div>
+        <div class="meta"><div class="owner">${avatarHTML(d.owner,20)}${d.owner}</div>
+          <div class="prob"><div class="bar"><i style="width:${d.prob}%;background:${s.color}"></i></div><div class="pt">${d.prob}%</div></div></div>
+        <div class="due"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>${d.due==='已完成'?'已成交':'预计成交 '+d.due}</div>
+      </div>`).join('')}
+    </div>`;
+  }).join('');
+  bindDnD();
+}
+function bindDnD(){
+  $$('.kcard').forEach(card=>{
+    card.addEventListener('dragstart',e=>{card.classList.add('dragging');e.dataTransfer.setData('text/plain',card.dataset.id);e.dataTransfer.effectAllowed='move'});
+    card.addEventListener('dragend',()=>card.classList.remove('dragging'));
+  });
+  $$('.kcol').forEach(col=>{
+    col.addEventListener('dragover',e=>{e.preventDefault();col.classList.add('drag-over')});
+    col.addEventListener('dragleave',()=>col.classList.remove('drag-over'));
+    col.addEventListener('drop',e=>{
+      e.preventDefault();col.classList.remove('drag-over');
+      const id=e.dataTransfer.getData('text/plain');
+      const deal=deals.find(d=>d.id===id);const ns=col.dataset.stage;
+      if(deal&&deal.stage!==ns){
+        const old=deal.stage;deal.stage=ns;
+        deal.prob={'初步接触':15,'需求确认':45,'商务谈判':70,'合同签订':100}[ns];
+        if(ns==='合同签订')deal.due='已完成';
+        renderKanban();renderDashFunnel();renderKPIs();
+        if(chConvertInst)chConvertInst.update();
+        toast(`「${deal.co}」已从 ${old} 推进至 ${ns}${ns==='合同签订'?' 🎉':''}`);
+        if(ns==='合同签订')setTimeout(()=>toast('已触发「成交后客户关怀」自动化流程'),700);
+      }
+    });
+  });
+}
+function addDeal(){
+  const pool=[['晨光新能源',96000,'林晓彤'],['蓝海文旅集团',168000,'赵启铭'],['启元教育科技',72000,'周沐阳']];
+  const p=pool[Math.floor(Math.random()*pool.length)];
+  deals.unshift({id:'D-'+String(deals.length+1).padStart(2,'0'),co:p[0],amt:p[1],owner:p[2],stage:'初步接触',prob:15,due:'8月15日'});
+  renderKanban();renderDashFunnel();
+  toast(`新商机「${p[0]}」已加入「初步接触」阶段`);
+}
+
+/* ==================== 营销与服务自动化 ==================== */
+const AUTO_ICONS={
+ mail:['var(--blue-soft)','var(--blue)','<path d="M4 5h16v12H4z"/><path d="m4 7 8 6 8-6"/>'],
+ bell:['var(--amber-soft)','var(--amber)','<path d="M18 8a6 6 0 1 0-12 0c0 7-3 8-3 8h18s-3-1-3-8"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/>'],
+ heart:['var(--violet-soft)','var(--violet)','<path d="M19 14c1.5-1.5 3-3.2 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.8 0-3.4 1-4.5 2.5C10.9 4 9.3 3 7.5 3A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4 3 5.5l7 7z"/>'],
+ refresh:['var(--green-soft)','var(--green)','<path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 3v6h-6"/>']};
+function renderAutomation(){
+  const on=automations.filter(a=>a.on).length;
+  $('#autoOnTag').textContent=`${on} / ${automations.length} 运行中`;
+  $('#autoKpis').innerHTML=[
+   {l:'本月自动触达',v:'1,286 次',c:'#4f46e5',bg:'var(--brand-soft)',icon:'<path d="M4 5h16v12H4z"/><path d="m4 7 8 6 8-6"/>'},
+   {l:'邮件平均打开率',v:'38.5%',c:'#2563eb',bg:'var(--blue-soft)',icon:'<path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/>'},
+   {l:'本月新增工单',v:tickets.length+' 件',c:'#d97706',bg:'var(--amber-soft)',icon:'<path d="M4 5h16v11H8l-4 4V5z"/>'},
+   {l:'工单 SLA 达标率',v:'96.2%',c:'#0ea968',bg:'var(--green-soft)',icon:'<path d="M20 6 9 17l-5-5"/>'}
+  ].map(k=>`<div class="mini-kpi"><div class="ic" style="background:${k.bg};color:${k.c}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${k.icon}</svg></div>
+    <div><div class="v">${k.v}</div><div class="l">${k.l}</div></div></div>`).join('');
+  $('#autoList').innerHTML=automations.map((a,i)=>{const m=AUTO_ICONS[a.icon];return `
+   <div class="auto-card">
+     <div class="ic" style="background:${m[0]};color:${m[1]}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${m[2]}</svg></div>
+     <div class="body">
+       <div class="bt"><b>${a.name}</b><span class="tag ${a.on?'tag-green':'tag-gray'}">${a.on?'运行中':'已暂停'}</span></div>
+       <div class="desc">${a.desc}</div>
+       <div class="flow">${a.steps.map((s,j)=>`<span class="flow-step">${s}</span>${j<a.steps.length-1?'<span class="flow-arrow">→</span>':''}`).join('')}</div>
+       <div class="stat">${a.stat}</div>
+     </div>
+     <div class="switch ${a.on?'on':''}" onclick="toggleAuto(${i},this)"></div>
+   </div>`}).join('');
+}
+function toggleAuto(i,el){
+  automations[i].on=!automations[i].on;
+  el.classList.toggle('on',automations[i].on);
+  renderAutomation();
+  toast(`「${automations[i].name}」已${automations[i].on?'启用':'暂停'}`);
+}
+
+/* ---------- 工单 ---------- */
+let fTicket='all';
+const priTag=p=>p==='高'?'tag-red':p==='中'?'tag-amber':'tag-gray';
+const stTag=s=>s==='已解决'?'tag-green':s==='处理中'?'tag-blue':'tag-amber';
+function renderTickets(){
+  const list=tickets.filter(t=>fTicket==='all'||t.st===fTicket);
+  $('#navTicketBadge').textContent=tickets.filter(t=>t.st==='待处理').length;
+  $('#ticketTbody').innerHTML=list.map((t,i)=>`<tr>
+    <td class="mono" style="font-weight:700">${t.id}</td>
+    <td style="font-weight:600">${t.cust}</td>
+    <td style="color:var(--ink-2);max-width:260px">${t.desc}</td>
+    <td><span class="tag ${priTag(t.pri)}">${t.pri}优先级</span></td>
+    <td><span class="tag ${stTag(t.st)}">${t.st}</span></td>
+    <td style="font-size:12.5px;${t.assignee==='未分配'?'color:var(--red);font-weight:600':''}">${t.assignee}</td>
+    <td style="font-size:12px;color:var(--ink-3)">${t.time}</td>
+    <td>${t.assignee==='未分配'
+        ?`<button class="btn btn-primary btn-sm" onclick="assignTicket('${t.id}')">智能分配</button>`
+        :t.st!=='已解决'
+        ?`<button class="btn btn-ghost btn-sm" onclick="resolveTicket('${t.id}')">标记解决</button>`
+        :`<span style="font-size:12px;color:var(--ink-3)">已归档</span>`}</td>
+  </tr>`).join('');
+}
+$('#segTicket').addEventListener('click',e=>{if(e.target.dataset.f){$$('#segTicket button').forEach(b=>b.classList.toggle('on',b===e.target));fTicket=e.target.dataset.f;renderTickets()}});
+function assignTicket(id){
+  const t=tickets.find(x=>x.id===id);if(!t)return;
+  t.assignee='客户成功·许安然';t.st='处理中';
+  renderTickets();
+  toast(`工单 ${id} 已按负载均衡策略自动分配给 许安然`);
+}
+function resolveTicket(id){
+  const t=tickets.find(x=>x.id===id);if(!t)return;
+  t.st='已解决';renderTickets();
+  toast(`工单 ${id} 已解决，已自动发送客户满意度回访`);
+}
+function addTicket(){
+  const n=1024+Math.floor(Math.random()*30+1);
+  tickets.unshift({id:'TK-'+n,cust:'星澜零售集团',desc:'大促期间短信通道并发咨询',pri:'中',st:'待处理',assignee:'未分配',time:'刚刚'});
+  renderTickets();
+  toast(`新工单 TK-${n} 已创建，等待智能分配`);
+}
+
+/* ==================== 报表摘要与洞察 ==================== */
+function renderForecastSummary(){
+  $('#forecastSummary').innerHTML=`
+   <div style="display:flex;flex-direction:column;gap:13px">
+    <div><div style="font-size:12px;color:var(--ink-3)">Q3 加权预测成交额</div>
+      <div style="font-size:26px;font-weight:800;letter-spacing:-.5px;margin-top:3px">¥ 218.6 <span style="font-size:13px;font-weight:600;color:var(--ink-3)">万</span></div>
+      <div class="trend up" style="font-size:12px;font-weight:600;color:var(--green);margin-top:2px">▲ 目标达成预期 104.8%</div></div>
+    <div class="pbar"><i style="width:86%;background:linear-gradient(90deg,#4f46e5,#8b5cf6)"></i></div>
+    <div style="display:flex;justify-content:space-between;font-size:11.5px;color:var(--ink-3)"><span>当前进度 86%</span><span>目标 ¥208.5 万</span></div>
+    <div style="background:var(--brand-soft);border-radius:11px;padding:13px 15px;font-size:12.5px;line-height:1.7;color:var(--brand-ink)">
+      <b>AI 预测解读：</b>商务谈判阶段的 2 个商机（合计 ¥46 万）赢单概率超过 65%，若按计划于 7 月底签约，Q3 将超额完成目标；建议重点关注北辰物流的合同条款确认。</div>
+   </div>`;
+}
+function renderInsights(){
+  const list=[
+   {c:'var(--green-soft)',col:'var(--green)',icon:'<path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/>',tx:'<b>科技行业增长强劲：</b>科技类客户成交额同比增长 42%，主要来自续约扩容，建议加大存量客户增购运营。'},
+   {c:'var(--amber-soft)',col:'var(--amber)',icon:'<path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/>',tx:'<b>需求确认阶段存在瓶颈：</b>该阶段平均停留 11.4 天，高于团队基准 8 天，建议启用标准化需求调研模板。'},
+   {c:'var(--blue-soft)',col:'var(--blue)',icon:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',tx:'<b>最佳触达时段：</b>营销邮件在周二 / 周四上午 10 点打开率最高（44.1%），已将建议同步至自动化引擎。'},
+   {c:'var(--violet-soft)',col:'var(--violet)',icon:'<path d="M19 14c1.5-1.5 3-3.2 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.8 0-3.4 1-4.5 2.5C10.9 4 9.3 3 7.5 3A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4 3 5.5l7 7z"/>',tx:'<b>服务口碑拉动转介绍：</b>SLA 达标率 96.2%，本季度 3 个新线索来自老客户转介绍，贡献 pipeline ¥31 万。'}
+  ];
+  $('#insightList').innerHTML=list.map(i=>`<div class="feed-item">
+    <div class="ic" style="background:${i.c};color:${i.col}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${i.icon}</svg></div>
+    <div class="tx">${i.tx}</div></div>`).join('');
+}
+$('#segRange').addEventListener('click',e=>{if(e.target.dataset.f){$$('#segRange button').forEach(b=>b.classList.toggle('on',b===e.target));toast(`已切换至 ${e.target.dataset.f} 数据视图（示例）`)}});
+
+/* ==================== 初始化渲染 ==================== */
+renderKPIs();renderDashFunnel();renderDashFeed();renderDashRank();renderDashTodo();
+renderCustomers();renderKanban();renderAutomation();renderTickets();
+renderForecastSummary();renderInsights();
+</script>
+<script>
+/* ==================== Chart.js 图表 ==================== */
+Chart.defaults.font.family="'Inter','PingFang SC','Microsoft YaHei',sans-serif";
+Chart.defaults.font.size=11.5;
+Chart.defaults.color='#9aa0ab';
+const GRID={color:'#f0f1f4'};
+const TT={backgroundColor:'#16181d',padding:10,cornerRadius:9,titleFont:{weight:'700'},boxPadding:4};
+let chConvertInst=null;
+
+function initCharts(page){
+  if(page==='dashboard'&&!window._chTrend){
+    window._chTrend=true;
+    const ctx=$('#chTrend').getContext('2d');
+    const g=ctx.createLinearGradient(0,0,0,260);
+    g.addColorStop(0,'rgba(79,70,229,.22)');g.addColorStop(1,'rgba(79,70,229,0)');
+    new Chart(ctx,{type:'line',data:{
+      labels:['8月','9月','10月','11月','12月','1月','2月','3月','4月','5月','6月','7月'],
+      datasets:[
+       {label:'实际成交',data:[98,112,105,131,128,86,92,118,135,142,158,171],borderColor:'#4f46e5',backgroundColor:g,fill:true,tension:.42,borderWidth:2.5,pointRadius:0,pointHoverRadius:5,pointBackgroundColor:'#4f46e5'},
+       {label:'销售目标',data:[100,100,110,115,120,90,95,110,125,135,145,160],borderColor:'#c9cdd9',borderDash:[6,5],fill:false,tension:.42,borderWidth:2,pointRadius:0}
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+       plugins:{legend:{display:false},tooltip:{...TT,callbacks:{label:c=>` ${c.dataset.label}：${c.parsed.y} 万元`}}},
+       scales:{x:{grid:{display:false}},y:{grid:GRID,border:{display:false},ticks:{callback:v=>v}}}}
+    });
+  }
+  if(page==='pipeline'&&!chConvertInst){
+    chConvertInst=new Chart($('#chConvert'),{type:'bar',data:{
+      labels:['初步接触 → 需求确认','需求确认 → 商务谈判','商务谈判 → 合同签订','整体赢单率'],
+      datasets:[
+       {label:'本季度',data:[62,58,69,33],backgroundColor:['#6366f1','#3b82f6','#f59e0b','#0ea968'],borderRadius:8,barThickness:26},
+       {label:'上季度',data:[55,51,60,28],backgroundColor:'#dfe2ea',borderRadius:8,barThickness:26}
+      ]},
+      options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+       plugins:{legend:{position:'bottom',labels:{boxWidth:10,boxHeight:10,borderRadius:3,usePointStyle:true,pointStyle:'rectRounded'}},
+        tooltip:{...TT,callbacks:{label:c=>` ${c.dataset.label}：${c.parsed.x}%`}}},
+       scales:{x:{grid:GRID,border:{display:false},max:100,ticks:{callback:v=>v+'%'}},y:{grid:{display:false}}}}
+    });
+  }
+  if(page==='automation'&&!window._chCamp){
+    window._chCamp=true;
+    new Chart($('#chCampaign'),{type:'bar',data:{
+      labels:['2月','3月','4月','5月','6月','7月'],
+      datasets:[
+       {label:'发送量',data:[820,940,1050,1180,1260,1286],backgroundColor:'#c7d2fe',borderRadius:6,barThickness:16},
+       {label:'打开数',data:[287,352,410,466,498,495],backgroundColor:'#4f46e5',borderRadius:6,barThickness:16}
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,
+       plugins:{legend:{position:'bottom',labels:{boxWidth:10,boxHeight:10,usePointStyle:true,pointStyle:'rectRounded'}},tooltip:TT},
+       scales:{x:{grid:{display:false}},y:{grid:GRID,border:{display:false}}}}
+    });
+    new Chart($('#chTicketSrc'),{type:'doughnut',data:{
+      labels:['系统内提交','邮件','企业微信','电话接入'],
+      datasets:[{data:[34,26,24,16],backgroundColor:['#4f46e5','#3b82f6','#0ea968','#f59e0b'],borderWidth:3,borderColor:'#fff',hoverOffset:6}]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:'62%',
+       plugins:{legend:{position:'right',labels:{boxWidth:10,boxHeight:10,usePointStyle:true,pointStyle:'rectRounded',padding:12}},
+        tooltip:{...TT,callbacks:{label:c=>` ${c.label}：${c.parsed}%`}}}}
+    });
+  }
+  if(page==='reports'&&!window._chRep){
+    window._chRep=true;
+    new Chart($('#chForecast'),{type:'bar',data:{
+      labels:['7月','8月','9月','10月','11月','12月'],
+      datasets:[
+       {type:'line',label:'冲刺目标',data:[80,165,250,330,420,520],borderColor:'#f59e0b',borderDash:[6,5],borderWidth:2,pointRadius:0,tension:.35,fill:false},
+       {label:'加权预测',data:[62,128,219,268,335,402],backgroundColor:'#4f46e5',borderRadius:7,barThickness:22},
+       {label:'保底预测',data:[48,95,156,198,244,290],backgroundColor:'#86efac',borderRadius:7,barThickness:22}
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,
+       plugins:{legend:{display:false},tooltip:{...TT,callbacks:{label:c=>` ${c.dataset.label}：${c.parsed.y} 万元`}}},
+       scales:{x:{grid:{display:false},stacked:false},y:{grid:GRID,border:{display:false},ticks:{callback:v=>v}}}}
+    });
+    new Chart($('#chPerf'),{type:'bar',data:{
+      labels:['林晓彤','陈思远','赵启铭','周沐阳','欧猫头'],
+      datasets:[{label:'目标完成率',data:[118,106,92,74,66],
+        backgroundColor:c=>c.raw>=100?'#0ea968':c.raw>=80?'#4f46e5':'#f59e0b',
+        borderRadius:8,barThickness:20}]},
+      options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+       plugins:{legend:{display:false},tooltip:{...TT,callbacks:{label:c=>` 完成率：${c.parsed.x}%`}}},
+       scales:{x:{grid:GRID,border:{display:false},max:130,ticks:{callback:v=>v+'%'}},y:{grid:{display:false}}}}
+    });
+    new Chart($('#chMarket'),{type:'line',data:{
+      labels:['1月','2月','3月','4月','5月','6月','7月'],
+      datasets:[
+       {label:'科技',data:[100,108,115,124,131,142,151],borderColor:'#4f46e5',tension:.4,borderWidth:2.4,pointRadius:0,pointHoverRadius:4},
+       {label:'制造',data:[100,103,101,106,110,108,114],borderColor:'#22c55e',tension:.4,borderWidth:2.4,pointRadius:0,pointHoverRadius:4},
+       {label:'金融',data:[100,98,102,99,104,108,106],borderColor:'#f59e0b',tension:.4,borderWidth:2.4,pointRadius:0,pointHoverRadius:4},
+       {label:'零售',data:[100,112,118,115,124,130,138],borderColor:'#ec4899',tension:.4,borderWidth:2.4,pointRadius:0,pointHoverRadius:4}
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+       plugins:{legend:{display:false},tooltip:{...TT,callbacks:{label:c=>` ${c.dataset.label}：${c.parsed.y}（1月=100）`}}},
+       scales:{x:{grid:{display:false}},y:{grid:GRID,border:{display:false}}}}
+    });
+    new Chart($('#chIndustry'),{type:'doughnut',data:{
+      labels:['科技','制造','零售','金融','其他'],
+      datasets:[{data:[38,26,18,11,7],backgroundColor:['#4f46e5','#3b82f6','#0ea968','#f59e0b','#c9cdd9'],borderWidth:3,borderColor:'#fff',hoverOffset:6}]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:'62%',
+       plugins:{legend:{position:'right',labels:{boxWidth:10,boxHeight:10,usePointStyle:true,pointStyle:'rectRounded',padding:12}},
+        tooltip:{...TT,callbacks:{label:c=>` ${c.label}：${c.parsed}%`}}}}
+    });
+  }
+}
+/* 首屏图表 */
+window.addEventListener('load',()=>{inited.dashboard=true;initCharts('dashboard')});
+</script>
+
+<script>
+/* 嵌入幻灯片：将 PgUp/PgDn/空格/Home/End 转发给父页用于翻页；
+   方向键留给 demo 自身交互，不转发 */
+(function(){
+  if (window.parent === window) return;
+  var KEYS = {PageUp:1, PageDown:1, ' ':1, Home:1, End:1};
+  window.addEventListener('keydown', function(e){
+    if (!KEYS[e.key]) return;
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    try {
+      window.parent.dispatchEvent(new window.parent.KeyboardEvent('keydown', {key: e.key}));
+      e.preventDefault();
+    } catch(err){}
+  }, true);
+})();
+</script>
+</body>
+</html>

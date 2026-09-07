@@ -1,0 +1,160 @@
+/* ========== 诗云 · 全局样式 ========== */
+
+html, body { height: 100%; }
+
+.serif { font-family: 'Noto Serif SC', 'Songti SC', serif; }
+
+body { font-family: 'Noto Sans SC', -apple-system, 'PingFang SC', sans-serif; }
+
+canvas#scene { cursor: grab; }
+canvas#scene:active { cursor: grabbing; }
+
+/* 标题辉光 */
+.title-glow {
+  background: linear-gradient(120deg, #e0f2ff 10%, #67e8f9 45%, #c084fc 90%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 0 32px rgba(103, 232, 249, 0.25);
+  letter-spacing: 0.15em;
+}
+
+/* 通用小按钮 */
+.ui-btn {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  color: #cbd5e1;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(8px);
+  transition: all .25s ease;
+}
+.ui-btn:hover {
+  color: #fff;
+  border-color: rgba(103, 232, 249, 0.55);
+  box-shadow: 0 0 18px rgba(103, 232, 249, 0.25);
+  transform: translateY(-1px);
+}
+
+/* 加载动画：脉动恒星 */
+.loading-star {
+  width: 64px; height: 64px; border-radius: 50%;
+  background: radial-gradient(circle, #fff 0%, #67e8f9 35%, rgba(103,232,249,0) 72%);
+  animation: starPulse 1.6s ease-in-out infinite;
+}
+@keyframes starPulse {
+  0%, 100% { transform: scale(0.85); opacity: .75; }
+  50%      { transform: scale(1.15); opacity: 1; }
+}
+
+/* 面板 Bento 卡片 */
+.card {
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 14px;
+  padding: 12px 14px;
+  transition: border-color .3s ease, background .3s ease;
+}
+.card:hover { border-color: rgba(255, 255, 255, 0.18); background: rgba(255, 255, 255, 0.06); }
+
+.card-label {
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  color: rgba(148, 163, 184, 0.75);
+  margin-bottom: 6px;
+}
+
+/* 诗文排版 */
+.poem-text {
+  font-family: 'Noto Serif SC', 'Songti SC', serif;
+  font-size: 15px;
+  line-height: 2.1;
+  letter-spacing: 0.08em;
+  color: #e2e8f0;
+  white-space: pre-line;
+  text-align: center;
+}
+
+/* 诗名 */
+.poem-title {
+  font-family: 'Noto Serif SC', serif;
+  font-weight: 900;
+  font-size: 22px;
+  letter-spacing: 0.12em;
+  text-align: center;
+  background: linear-gradient(120deg, #f8fafc, #a5f3fc);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* 朝代标签 */
+.dynasty-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 10px; letter-spacing: 0.2em;
+  padding: 3px 10px; border-radius: 9999px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.04);
+}
+.dynasty-dot { width: 7px; height: 7px; border-radius: 50%; box-shadow: 0 0 8px currentColor; }
+
+/* 搜索结果项 */
+.search-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 12px; font-size: 12px; cursor: pointer;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  transition: background .15s ease;
+}
+.search-item:hover { background: rgba(103, 232, 249, 0.08); }
+.search-item .tag {
+  margin-left: auto; font-size: 10px; color: #64748b; letter-spacing: .1em;
+}
+
+/* 同诗人诗作列表项 */
+.poem-link {
+  display: block; width: 100%; text-align: left;
+  font-size: 12px; padding: 6px 8px; border-radius: 8px;
+  color: #cbd5e1; letter-spacing: .05em;
+  transition: all .18s ease; cursor: pointer;
+}
+.poem-link:hover { background: rgba(103,232,249,0.10); color: #fff; padding-left: 14px; }
+.poem-link.active { color: #67e8f9; background: rgba(103,232,249,0.07); }
+
+/* 面板导航按钮 */
+.nav-btn {
+  flex: 1; font-size: 11px; letter-spacing: .15em;
+  padding: 8px 0; border-radius: 10px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #cbd5e1; transition: all .22s ease;
+}
+.nav-btn:hover { border-color: rgba(103,232,249,0.5); color: #fff; box-shadow: 0 0 14px rgba(103,232,249,0.2); }
+
+/* 图例 */
+.legend-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 10px; letter-spacing: .18em; color: #94a3b8;
+}
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 10px currentColor; }
+
+/* 滚动条 */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(148,163,184,.25); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(103,232,249,.4); }
+
+/* 面板显隐 */
+#panel.open { transform: translateX(0); }
+
+/* 提示工具 */
+#tooltip { color: #e0f2fe; box-shadow: 0 4px 24px rgba(0,0,0,.5); }
+#tooltip .tt-dynasty { color: #67e8f9; }
+
+/* 面板内容淡入 */
+.fade-in { animation: fadeUp .45s ease both; }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

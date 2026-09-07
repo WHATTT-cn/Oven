@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>烧杯 · Molecular Beaker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Space+Grotesk:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg0:#f7f1df;
+  --bg1:#eee4c9;
+  --panel:rgba(255,252,244,.55);
+  --panel-border:rgba(122,98,55,.16);
+  --txt:#3f3823;
+  --txt2:#7d7154;
+  --txt3:#ab9d7c;
+  --accent:#b07d2a;
+  --accent2:#0e7c86;
+  --amber:#a0630a;
+  --radius:18px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  font-family:'Noto Sans SC','Space Grotesk',system-ui,sans-serif;
+  background:
+    radial-gradient(1100px 700px at 78% -10%, rgba(176,125,42,.1), transparent 60%),
+    radial-gradient(900px 700px at -10% 100%, rgba(14,124,134,.07), transparent 60%),
+    linear-gradient(160deg,var(--bg0),var(--bg1));
+  color:var(--txt);
+  overflow:hidden;
+  user-select:none;
+}
+#app{display:grid;grid-template-columns:264px 1fr 330px;height:100vh;gap:0}
+
+/* ============ 左侧面板 ============ */
+aside.panel{
+  background:var(--panel);
+  border-right:1px solid var(--panel-border);
+  backdrop-filter:blur(14px);
+  display:flex;flex-direction:column;min-height:0;
+}
+#rightPanel{border-right:none;border-left:1px solid var(--panel-border)}
+.brand{padding:22px 20px 14px;border-bottom:1px solid var(--panel-border)}
+.brand .logo{display:flex;align-items:center;gap:10px}
+.brand .logo .mark{
+  width:36px;height:36px;border-radius:11px;display:grid;place-items:center;font-size:18px;
+  background:linear-gradient(135deg,rgba(176,125,42,.16),rgba(14,124,134,.1));
+  border:1px solid rgba(176,125,42,.32);
+}
+.brand h1{font-size:16px;font-weight:700;letter-spacing:.04em}
+.brand .sub{font-size:10.5px;color:var(--txt3);letter-spacing:.18em;text-transform:uppercase;margin-top:2px;font-family:'Space Grotesk'}
+.brand .count{margin-top:12px;font-size:11px;color:var(--txt2);display:flex;align-items:center;gap:8px}
+.brand .count b{color:var(--accent);font-family:'Space Grotesk';font-size:13px}
+.search{margin:12px 14px 8px;position:relative}
+.search input{
+  width:100%;padding:9px 12px 9px 32px;border-radius:10px;font-size:12.5px;color:var(--txt);
+  background:rgba(255,255,255,.6);border:1px solid var(--panel-border);outline:none;
+  font-family:inherit;transition:border-color .2s;
+}
+.search input:focus{border-color:rgba(176,125,42,.5)}
+.search input::placeholder{color:var(--txt3)}
+.search svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);opacity:.5}
+#molList{flex:1;overflow-y:auto;padding:4px 10px 14px;scrollbar-width:thin;scrollbar-color:rgba(122,98,55,.25) transparent}
+#molList::-webkit-scrollbar{width:5px}
+#molList::-webkit-scrollbar-thumb{background:rgba(122,98,55,.22);border-radius:3px}
+.mol-item{
+  display:flex;align-items:baseline;gap:9px;padding:8px 10px;border-radius:10px;cursor:pointer;
+  transition:background .15s;border:1px solid transparent;margin-bottom:1px;
+}
+.mol-item:hover{background:rgba(255,255,255,.55)}
+.mol-item.active{background:rgba(176,125,42,.12);border-color:rgba(176,125,42,.32)}
+.mol-item .idx{font-family:'Space Grotesk';font-size:10px;color:var(--txt3);width:24px;flex-shrink:0}
+.mol-item.active .idx{color:var(--accent)}
+.mol-item .nm{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mol-item .en{margin-left:auto;font-size:10px;color:var(--txt3);font-family:'Space Grotesk';flex-shrink:0;max-width:88px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mol-item.active .en{color:rgba(176,125,42,.65)}
+
+/* ============ 中央舞台 ============ */
+#stage{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:0;overflow:hidden}
+#stageGlow{position:absolute;width:640px;height:640px;border-radius:50%;background:radial-gradient(circle,rgba(176,125,42,.1),transparent 65%);pointer-events:none}
+
+#beakerWrap{
+  position:relative;width:min(44vh,400px);height:min(64vh,600px);
+  will-change:transform,opacity;cursor:grab;touch-action:none;
+}
+#beakerWrap.grabbing{cursor:grabbing}
+
+/* 烧杯玻璃 */
+.beaker{
+  position:absolute;inset:0;
+  border-radius:6px 6px 34px 34px / 6px 6px 40px 40px;
+  border:1.5px solid rgba(105,82,42,.38);
+  border-top:none;
+  background:
+    linear-gradient(115deg,rgba(255,255,255,.55) 0%,rgba(255,255,255,.14) 28%,rgba(255,255,255,.02) 55%,rgba(255,255,255,.3) 100%);
+  box-shadow:
+    inset 0 0 60px rgba(176,125,42,.06),
+    inset 14px 0 30px -18px rgba(255,255,255,.7),
+    0 30px 70px -22px rgba(122,98,55,.4);
+}
+.beaker::before{ /* 杯口 */
+  content:'';position:absolute;top:-9px;left:-7px;right:-7px;height:18px;border-radius:50%;
+  border:1.5px solid rgba(105,82,42,.42);
+  background:rgba(255,255,255,.3);
+  box-shadow:inset 0 2px 6px rgba(255,255,255,.7);
+}
+.beaker .ticks{ /* 刻度 */
+  position:absolute;left:16px;top:16%;bottom:20%;width:26px;
+  background:repeating-linear-gradient(to bottom,rgba(105,82,42,.42) 0 1.5px,transparent 1.5px 46px);
+  -webkit-mask:linear-gradient(to right,#000 0 16px,transparent 16px);
+          mask:linear-gradient(to right,#000 0 16px,transparent 16px);
+  opacity:.75;
+}
+.beaker .liquid{ /* 底部少量液体 */
+  position:absolute;left:3px;right:3px;bottom:3px;height:15%;
+  border-radius:8px 8px 30px 30px / 8px 8px 36px 36px;
+  background:linear-gradient(to bottom,rgba(176,125,42,.2),rgba(176,125,42,.07));
+  box-shadow:inset 0 8px 16px -6px rgba(176,125,42,.3);
+}
+.beaker .liquid::before{
+  content:'';position:absolute;top:-5px;left:1%;right:1%;height:10px;border-radius:50%;
+  background:rgba(210,160,80,.3);filter:blur(1px);
+}
+#beakerCanvas{position:absolute;inset:6% 4% 8%;z-index:2}
+#beakerCanvas canvas{width:100%!important;height:100%!important;display:block}
+
+.mol-tag{
+  position:absolute;left:50%;bottom:-52px;transform:translateX(-50%);
+  text-align:center;white-space:nowrap;pointer-events:none;
+}
+.mol-tag .t1{font-size:19px;font-weight:700;letter-spacing:.05em}
+.mol-tag .t1 .en{color:var(--txt2);font-weight:400;font-size:14px;margin-left:10px;font-family:'Space Grotesk'}
+.mol-tag .t2{margin-top:3px;font-family:'Space Grotesk';font-size:12px;color:var(--accent);letter-spacing:.2em}
+
+/* 导航箭头 */
+.nav-arrow{
+  position:absolute;top:50%;transform:translateY(-50%);z-index:5;
+  width:46px;height:46px;border-radius:50%;display:grid;place-items:center;cursor:pointer;
+  background:rgba(255,255,255,.55);border:1px solid var(--panel-border);color:var(--txt2);
+  transition:all .2s;font-size:17px;
+  box-shadow:0 4px 14px -4px rgba(122,98,55,.25);
+}
+.nav-arrow:hover{background:rgba(176,125,42,.14);border-color:rgba(176,125,42,.45);color:var(--accent)}
+#prevBtn{left:max(4%,30px)}
+#nextBtn{right:max(4%,30px)}
+
+.stage-footer{
+  position:absolute;bottom:26px;left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;
+}
+.counter{font-family:'Space Grotesk';font-size:13px;letter-spacing:.25em;color:var(--txt2)}
+.counter b{color:var(--txt);font-size:16px}
+.hint{font-size:11px;color:var(--txt3);letter-spacing:.12em;display:flex;gap:18px}
+.hint span{display:flex;align-items:center;gap:6px}
+.hint i{font-style:normal;color:var(--accent);opacity:.85}
+
+/* 拖拽边缘提示 */
+.edge-hint{
+  position:absolute;top:50%;transform:translateY(-50%);font-size:34px;color:var(--accent);
+  opacity:0;transition:opacity .15s;pointer-events:none;z-index:4;text-shadow:0 0 24px rgba(176,125,42,.5);
+}
+#edgeL{left:-64px}#edgeR{right:-64px}
+
+/* ============ 右侧面板 ============ */
+.info-scroll{flex:1;overflow-y:auto;padding:20px 20px 26px;scrollbar-width:thin}
+.info-scroll::-webkit-scrollbar{width:5px}
+.info-scroll::-webkit-scrollbar-thumb{background:rgba(122,98,55,.22);border-radius:3px}
+.info-head{padding:18px 20px 14px;border-bottom:1px solid var(--panel-border)}
+.info-head .zh{font-size:21px;font-weight:700}
+.info-head .en{font-family:'Space Grotesk';font-size:12.5px;color:var(--txt2);margin-top:3px;letter-spacing:.06em}
+.sec{margin-bottom:20px;animation:fadeUp .4s both}
+.sec:nth-child(2){animation-delay:.04s}.sec:nth-child(3){animation-delay:.08s}
+.sec:nth-child(4){animation-delay:.12s}.sec:nth-child(5){animation-delay:.16s}.sec:nth-child(6){animation-delay:.2s}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.sec-label{
+  font-size:10.5px;letter-spacing:.22em;color:var(--txt3);text-transform:uppercase;
+  display:flex;align-items:center;gap:8px;margin-bottom:9px;font-weight:500;
+}
+.sec-label::after{content:'';flex:1;height:1px;background:linear-gradient(to right,var(--panel-border),transparent)}
+.sec-label .dot{width:5px;height:5px;border-radius:50%;background:var(--accent)}
+.formula{
+  font-family:'Space Grotesk','Noto Sans SC';font-size:26px;font-weight:600;letter-spacing:.04em;
+  padding:12px 16px;border-radius:12px;background:rgba(255,255,255,.6);border:1px solid var(--panel-border);
+  color:var(--amber);text-align:center;
+}
+.struct{
+  font-size:13px;line-height:1.9;padding:11px 14px;border-radius:12px;color:var(--txt);
+  background:rgba(255,255,255,.5);border:1px solid var(--panel-border);word-break:break-all;
+}
+.elem-chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{
+  display:flex;align-items:center;gap:7px;padding:6px 12px;border-radius:999px;font-size:12px;
+  background:rgba(255,255,255,.6);border:1px solid var(--panel-border);
+}
+.chip .cdot{width:10px;height:10px;border-radius:50%;box-shadow:0 0 8px currentColor}
+.chip b{font-family:'Space Grotesk'}
+.chip .n{color:var(--txt2);font-family:'Space Grotesk';font-size:11px}
+.mw{display:flex;align-items:baseline;gap:10px;padding:12px 16px;border-radius:12px;background:rgba(255,255,255,.6);border:1px solid var(--panel-border)}
+.mw b{font-family:'Space Grotesk';font-size:24px;color:var(--accent2)}
+.mw span{font-size:11px;color:var(--txt3)}
+.desc{font-size:13px;line-height:1.85;color:var(--txt2);text-align:justify}
+.atom-count{font-size:11px;color:var(--txt3);margin-top:10px;text-align:right;font-family:'Space Grotesk';letter-spacing:.08em}
+
+@media (max-width:1060px){
+  #app{grid-template-columns:1fr;grid-template-rows:1fr auto auto;height:auto;overflow:auto}
+  body{overflow:auto}
+  aside.panel{border:none;border-top:1px solid var(--panel-border)}
+  #stage{height:82vh}
+  #leftPanel{order:2}#rightPanel{order:3}
+  #molList{max-height:260px}
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- 左侧：分子目录 -->
+  <aside class="panel" id="leftPanel">
+    <div class="brand">
+      <div class="logo">
+        <div class="mark">⚗️</div>
+        <div>
+          <h1>烧杯</h1>
+          <div class="sub">Molecular Beaker</div>
+        </div>
+      </div>
+      <div class="count"><b id="totalCount">100</b> 种球棍模型 · 球径与配色遵循 CPK 标准</div>
+    </div>
+    <div class="search">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7d7154" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <input id="searchInput" type="text" placeholder="搜索分子名称 / 英文名 / 分子式…">
+    </div>
+    <div id="molList"></div>
+  </aside>
+
+  <!-- 中央：烧杯舞台 -->
+  <main id="stage">
+    <div id="stageGlow"></div>
+    <div class="nav-arrow" id="prevBtn">←</div>
+    <div class="nav-arrow" id="nextBtn">→</div>
+
+    <div id="beakerWrap">
+      <div class="edge-hint" id="edgeL">‹</div>
+      <div class="edge-hint" id="edgeR">›</div>
+      <div class="beaker">
+        <div class="ticks"></div>
+        <div class="liquid"></div>
+      </div>
+      <div id="beakerCanvas"></div>
+      <div class="mol-tag">
+        <div class="t1"><span id="tagZh"></span><span class="en" id="tagEn"></span></div>
+        <div class="t2" id="tagFormula"></div>
+      </div>
+    </div>
+
+    <div class="stage-footer">
+      <div class="counter"><b id="curIdx">001</b> / <span id="totalIdx">100</span></div>
+      <div class="hint">
+        <span><i>⟵ ⟶</i> 左右拖拽切换烧杯</span>
+        <span><i>⟲</i> 拖动旋转模型</span>
+        <span><i>⌨</i> 方向键切换</span>
+      </div>
+    </div>
+  </main>
+
+  <!-- 右侧：分子信息 -->
+  <aside class="panel" id="rightPanel">
+    <div class="info-head">
+      <div class="zh" id="infoZh"></div>
+      <div class="en" id="infoEn"></div>
+    </div>
+    <div class="info-scroll" id="infoBody">
+      <div class="sec">
+        <div class="sec-label"><span class="dot"></span>分子式 · Formula</div>
+        <div class="formula" id="infoFormula"></div>
+      </div>
+      <div class="sec">
+        <div class="sec-label"><span class="dot"></span>分子结构式 · Structure</div>
+        <div class="struct" id="infoStruct"></div>
+      </div>
+      <div class="sec">
+        <div class="sec-label"><span class="dot"></span>组成元素 · Elements</div>
+        <div class="elem-chips" id="infoElems"></div>
+      </div>
+      <div class="sec">
+        <div class="sec-label"><span class="dot"></span>相对分子质量 · Molar Mass</div>
+        <div class="mw"><b id="infoMw"></b><span>g·mol⁻¹（按模型原子计数计算）</span></div>
+      </div>
+      <div class="sec">
+        <div class="sec-label"><span class="dot"></span>分子简介 · About</div>
+        <div class="desc" id="infoDesc"></div>
+        <div class="atom-count" id="infoAtoms"></div>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
+<script>
+/* ================= PURE LOGIC START（无浏览器依赖，可独立校验） ================= */
+const H='H',C='C',N='N',O='O',S='S',F='F',CL='Cl',P='P',BR='Br',I='I';
+const VAL={H:1,C:4,N:3,O:2,S:2,P:5,F:1,Cl:1,Br:1,I:1};
+const MASS={H:1.008,C:12.011,N:14.007,O:15.999,F:18.998,Cl:35.45,S:32.06,P:30.974,Br:79.904,I:126.904};
+const ELE_CN={H:'氢',C:'碳',N:'氮',O:'氧',S:'硫',P:'磷',F:'氟',Cl:'氯',Br:'溴',I:'碘'};
+// CPK 标准配色（H 白、O 红、N 蓝、C 深灰……）
+const CPK={H:'#f2f2f2',C:'#3d434e',N:'#3050f8',O:'#ff0d0d',S:'#e8c832',F:'#90e050',Cl:'#1ff01f',P:'#ff8000',Br:'#a62929',I:'#940094'};
+// 球径比例（按范德华半径缩放）
+const RAD={H:0.30,C:0.46,N:0.44,O:0.42,S:0.52,P:0.52,F:0.38,Cl:0.52,Br:0.56,I:0.62};
+
+const RING=(n,o=1)=>Array.from({length:n},(_,i)=>[i,(i+1)%n,o]);
+const CHAIN=n=>Array.from({length:Math.max(0,n-1)},(_,i)=>[i,i+1]);
+const CARB=n=>Array(n).fill('C');
+
+/* 分子数据：[中文名, 英文名, 结构式, 简介, 骨架{a:重原子元素, b:键[ i,j,键级 ], v:价态覆盖, h:强制H数}] */
+const MOLS=[
+["水","Water","H–O–H","地球上最常见的溶剂分子，两个 O–H 键呈约 104.5° 弯曲构型。氢键网络赋予水高比热、高表面张力等独特性质，是生命活动的基础介质。",{a:[O],b:[]}],
+["过氧化氢","Hydrogen Peroxide","H–O–O–H","俗称双氧水，含过氧键 O–O，是常用的氧化剂与消毒剂。分子呈非平面的'翻开的书页'型构象，O–O 键较弱易均裂产生羟基自由基。",{a:[O,O],b:[[0,1]]}],
+["二氧化碳","Carbon Dioxide","O=C=O","直线形非极性分子，是呼吸作用产物与光合作用的原料。作为最主要的温室气体，其浓度变化直接影响全球气候。",{a:[C,O,O],b:[[0,1,2],[0,2,2]]}],
+["一氧化碳","Carbon Monoxide","C≡O","无色无味的剧毒气体，与血红蛋白的结合力约为氧气的 240 倍。工业上是重要的合成气组分和还原剂。",{a:[C,O],b:[[0,1,3]],v:{0:3,1:3}}],
+["甲烷","Methane","CH₄","最简单的有机物，正四面体构型，键角 109.5°。是天然气的主要成分，也是重要的温室气体和化工原料。",{a:[C],b:[]}],
+["乙烷","Ethane","CH₃–CH₃","最简单的含 C–C 单键的烷烃，单键可自由旋转产生交叉式与重叠式构象，是研究构象分析的经典模型。",{a:CARB(2),b:CHAIN(2)}],
+["丙烷","Propane","CH₃–CH₂–CH₃","液化石油气（LPG）的主要成分，常温下为易燃气体。常用作燃料、制冷剂与化工裂解原料。",{a:CARB(3),b:CHAIN(3)}],
+["正丁烷","n-Butane","CH₃–(CH₂)₂–CH₃","打火机燃料的主要成分，存在正丁烷与异丁烷两种同分异构体，是烷烃同分异构现象的最简单实例。",{a:CARB(4),b:CHAIN(4)}],
+["正戊烷","n-Pentane","CH₃–(CH₂)₃–CH₃","常温下为挥发性液体，常用作实验室溶剂与发泡剂。碳链开始呈现明显的锯齿形伸展构象。",{a:CARB(5),b:CHAIN(5)}],
+["正己烷","n-Hexane","CH₃–(CH₂)₄–CH₃","工业上广泛使用的非极性溶剂，常用于植物油萃取。长期接触其蒸气可能损伤周围神经。",{a:CARB(6),b:CHAIN(6)}],
+["正庚烷","n-Heptane","CH₃–(CH₂)₅–CH₃","辛烷值测定中定义为零点的标准燃料。锯齿形碳链是汽油馏分的典型代表。",{a:CARB(7),b:CHAIN(7)}],
+["正辛烷","n-Octane","CH₃–(CH₂)₆–CH₃","汽油的重要组成成分，其异构体异辛烷被定义为辛烷值 100 的标准。",{a:CARB(8),b:CHAIN(8)}],
+["乙烯","Ethylene","CH₂=CH₂","最简单的烯烃，平面形分子，C=C 双键不可旋转。是重要的植物激素（催熟剂），也是产量最大的有机化工原料。",{a:CARB(2),b:[[0,1,2]]}],
+["丙烯","Propylene","CH₂=CH–CH₃","聚丙烯塑料的单体，产量仅次于乙烯的基础化工原料，主要来自石油裂解。",{a:CARB(3),b:[[0,1,2],[1,2]]}],
+["乙炔","Acetylene","CH≡CH","最简单的炔烃，直线形分子，C≡C 三键。氧炔焰温度可达 3000°C 以上，用于金属焊接切割。",{a:CARB(2),b:[[0,1,3]]}],
+["1,3-丁二烯","1,3-Butadiene","CH₂=CH–CH=CH₂","最简单的共轭二烯，π 电子离域形成共轭体系。是合成橡胶（如丁苯橡胶）的核心单体。",{a:CARB(4),b:[[0,1,2],[1,2],[2,3,2]]}],
+["异戊二烯","Isoprene","CH₂=C(CH₃)–CH=CH₂","天然橡胶（聚异戊二烯）的单体，萜类化合物的基本构建单元，广泛存在于植物挥发物中。",{a:CARB(5),b:[[0,1,2],[1,2],[1,4],[2,3,2]]}],
+["苯","Benzene","平面六元环，6π 电子离域","芳香烃的母体，六个碳原子构成正六边形，π 电子完全离域形成大 π 键。凯库勒式是化学史上最著名的结构假说之一。",{a:CARB(6),b:RING(6,1.5)}],
+["甲苯","Toluene","C₆H₅–CH₃","苯环上连接一个甲基，是常用的有机溶剂与化工原料，也是 TNT 炸药的前体。",{a:[...CARB(7)],b:[...RING(6,1.5),[0,6]]}],
+["苯酚","Phenol","C₆H₅–OH","俗称石炭酸，羟基直接连在苯环上，具弱酸性。是酚醛树脂的原料，历史上最早的外科消毒剂。",{a:[...CARB(6),O],b:[...RING(6,1.5),[0,6]]}],
+["苯胺","Aniline","C₆H₅–NH₂","最简单的芳香胺，氨基的给电子效应使苯环活化。是染料工业（如苯胺紫）的奠基性原料。",{a:[...CARB(6),N],b:[...RING(6,1.5),[0,6]]}],
+["苯甲醛","Benzaldehyde","C₆H₅–CHO","具有苦杏仁特征香气的芳香醛，存在于苦杏仁苷中。广泛用于香料与食品调味工业。",{a:[...CARB(7),O],b:[...RING(6,1.5),[0,6],[6,7,2]]}],
+["苯甲酸","Benzoic Acid","C₆H₅–COOH","最简单的芳香羧酸，其钠盐是常用的食品防腐剂。存在于安息香树脂等多种天然树脂中。",{a:[...CARB(7),O,O],b:[...RING(6,1.5),[0,6],[6,7,2],[6,8]]}],
+["水杨酸","Salicylic Acid","o-HO–C₆H₄–COOH","邻羟基苯甲酸，存在于柳树皮中，是阿司匹林的前体。广泛用于医药与护肤品（角质剥脱剂）。",{a:[...CARB(7),O,O,O],b:[...RING(6,1.5),[0,6],[6,7,2],[6,8],[1,9]]}],
+["萘","Naphthalene","双稠合苯环 C₁₀H₈","最简单的稠环芳烃，两个苯环共用一条边。卫生球（樟脑丸）的传统成分，有特殊气味。",{a:CARB(10),b:[[0,1,1.5],[1,2,1.5],[2,3,1.5],[3,4,1.5],[4,5,1.5],[5,0,1.5],[5,6,1.5],[6,7,1.5],[7,8,1.5],[8,9,1.5],[9,4,1.5]]}],
+["环丙烷","Cyclopropane","三元环 (CH₂)₃","最小的环烷烃，C–C–C 键角仅 60°，环张力极大。弯曲键（香蕉键）是其成键特征，曾用作吸入麻醉剂。",{a:CARB(3),b:RING(3)}],
+["环丁烷","Cyclobutane","四元环 (CH₂)₄","四元环存在显著环张力，环呈轻微折叠构象以缓解扭转张力。",{a:CARB(4),b:RING(4)}],
+["环戊烷","Cyclopentane","五元环 (CH₂)₅","环张力较小的环烷烃，采取信封式折叠构象。其骨架广泛存在于前列腺素等天然产物中。",{a:CARB(5),b:RING(5)}],
+["环己烷","Cyclohexane","六元环 (CH₂)₆","几乎无环张力的理想环烷烃，经典的椅式构象是立体化学教学的基础模型，存在直立键与平伏键之分。",{a:CARB(6),b:RING(6)}],
+["立方烷","Cubane","立方体骨架 C₈H₈","八个碳原子精确排列在立方体顶点，键角被迫扭曲至 90°，张力能极高却动力学稳定，是理论化学的明星分子。",{a:CARB(8),b:[[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]]}],
+["金刚烷","Adamantane","三環[3.3.1.1]癸烷 C₁₀H₁₆","碳骨架与金刚石晶格片段完全一致的笼状烃，对称性极高（Td 群）。其衍生物金刚烷胺是抗流感药物。",{a:CARB(10),b:[[0,4],[4,1],[0,5],[5,2],[0,6],[6,3],[1,7],[7,2],[1,8],[8,3],[2,9],[9,3]]}],
+["甲醇","Methanol","CH₃–OH","最简单的醇，又称木精。是重要的化工原料与燃料，误饮可致失明甚至死亡（代谢为甲酸）。",{a:[C,O],b:[[0,1]]}],
+["乙醇","Ethanol","CH₃–CH₂–OH","酒的主要成分，最常见的醇类。广泛用作溶剂、消毒剂（75% 医用酒精）与生物燃料。",{a:[C,C,O],b:[[0,1],[1,2]]}],
+["正丙醇","1-Propanol","CH₃–CH₂–CH₂–OH","三碳直链伯醇，用作溶剂与化学中间体，是丙醇两种同分异构体之一。",{a:[C,C,C,O],b:[[0,1],[1,2],[2,3]]}],
+["异丙醇","Isopropanol","(CH₃)₂CH–OH","最常见的仲醇，羟基位于中间碳上。是广泛使用的消毒与清洁溶剂（IPA），电子工业常用清洗剂。",{a:[C,C,C,O],b:[[0,1],[1,2],[1,3]]}],
+["正丁醇","1-Butanol","CH₃–(CH₂)₃–OH","四碳伯醇，用作溶剂、增塑剂原料，也是生物发酵法制备的生物燃料候选（生物丁醇）。",{a:[C,C,C,C,O],b:[[0,1],[1,2],[2,3],[3,4]]}],
+["乙二醇","Ethylene Glycol","HO–CH₂–CH₂–OH","最简单的二元醇，是汽车防冻液的主要成分和 PET 聚酯的原料。味甜但有毒。",{a:[O,C,C,O],b:[[0,1],[1,2],[2,3]]}],
+["丙三醇","Glycerol","HO–CH₂–CH(OH)–CH₂–OH","即甘油，三元醇，是油脂（甘油三酯）的骨架。具吸湿性，广泛用于食品、化妆品与医药。",{a:[O,C,C,C,O,O],b:[[0,1],[1,2],[2,3],[3,4],[2,5]]}],
+["甲醛","Formaldehyde","H–CHO","最简单的醛，平面三角构型。其水溶液（福尔马林）用于标本防腐，也是室内空气污染的主要元凶。",{a:[C,O],b:[[0,1,2]]}],
+["乙醛","Acetaldehyde","CH₃–CHO","乙醇在体内的第一级代谢产物，饮酒脸红即由其积累引起。是重要的化工中间体。",{a:[C,C,O],b:[[0,1],[1,2,2]]}],
+["丙酮","Acetone","CH₃–CO–CH₃","最简单的酮，平面三角的羰基碳。是优良的有机溶剂（洗甲水成分），也是人体酮体之一。",{a:[C,C,C,O],b:[[0,1],[1,2],[1,3,2]]}],
+["甲酸","Formic Acid","H–COOH","最简单的羧酸，存在于蚂蚁与蜂毒中（蚁酸）。酸性强于乙酸，用作防腐剂与化工原料。",{a:[C,O,O],b:[[0,1,2],[0,2]]}],
+["乙酸","Acetic Acid","CH₃–COOH","食醋的主要成分（约 5%），又称醋酸。是重要的化工原料（生产醋酸纤维、聚乙烯醇等）。",{a:[C,C,O,O],b:[[0,1],[1,2,2],[1,3]]}],
+["丙酸","Propionic Acid","CH₃–CH₂–COOH","三碳羧酸，其钙盐、钠盐是常用的食品防霉剂。也存在于汗液与乳制品发酵产物中。",{a:[C,C,C,O,O],b:[[0,1],[1,2],[2,3,2],[2,4]]}],
+["丁酸","Butyric Acid","CH₃–(CH₂)₂–COOH","四碳羧酸，赋予黄油与奶酪特征风味，也是肠道益生菌发酵膳食纤维的重要产物，对肠道健康有益。",{a:[C,C,C,C,O,O],b:[[0,1],[1,2],[2,3],[3,4,2],[3,5]]}],
+["乳酸","Lactic Acid","CH₃–CH(OH)–COOH","剧烈运动后肌肉酸痛相关的代谢物，酸奶发酵的产物。含一个手性碳，存在 L/D 两种对映体，聚乳酸（PLA）是其可降解塑料形式。",{a:[C,C,C,O,O,O],b:[[0,1],[1,2],[1,3],[2,4,2],[2,5]]}],
+["柠檬酸","Citric Acid","HOOC–CH₂–C(OH)(COOH)–CH₂–COOH","柑橘类水果的主要有机酸，三羧酸循环（TCA）的关键中间体。是食品工业用量最大的酸味剂。",{a:[C,C,C,C,C,C,O,O,O,O,O,O,O],b:[[0,1],[1,2],[2,3],[3,4],[2,5],[0,6,2],[0,7],[4,8,2],[4,9],[5,10,2],[5,11],[2,12]]}],
+["草酸","Oxalic Acid","HOOC–COOH","最简单的二元羧酸，存在于菠菜、大黄中。酸性强，能与钙结合形成难溶的草酸钙（肾结石成分）。",{a:[C,C,O,O,O,O],b:[[0,1],[0,2,2],[0,3],[1,4,2],[1,5]]}],
+["乙酸乙酯","Ethyl Acetate","CH₃–COO–CH₂–CH₃","最常用的酯类溶剂，具水果香气。由乙酸与乙醇酯化生成，是酯化反应教学的经典实例。",{a:[C,C,O,O,C,C],b:[[0,1],[1,2,2],[1,3],[3,4],[4,5]]}],
+["氨","Ammonia","NH₃","三角锥形分子，具孤对电子，碱性气体。哈伯法合成氨是 20 世纪最重要的工业成就，支撑了全球化肥工业。",{a:[N],b:[]}],
+["肼","Hydrazine","H₂N–NH₂","又称联氨，含 N–N 单键。强还原剂，与氧化剂接触自燃，广泛用作火箭推进剂。",{a:[N,N],b:[[0,1]]}],
+["氢气","Hydrogen","H–H","最轻的分子，单质形态。燃烧产物仅为水，被视为理想的清洁能源载体。",{a:[H,H],b:[[0,1]]}],
+["氮气","Nitrogen","N≡N","空气的 78%，N≡N 三键键能极大（945 kJ/mol），化学性质稳定。工业固氮需要高温高压打破该键。",{a:[N,N],b:[[0,1,3]]}],
+["氧气","Oxygen","O=O","支持燃烧与呼吸的双原子分子。基态为三重态（含两个未成对电子），具有顺磁性。",{a:[O,O],b:[[0,1,2]]}],
+["臭氧","Ozone","O₃（弯曲形）","氧的同素异形体，弯曲形分子。平流层臭氧层吸收紫外线保护生物，近地面臭氧则是污染物。",{a:[O,O,O],b:[[0,1,1.5],[1,2,1.5]],v:{0:1.5,2:1.5}}],
+["氟气","Fluorine","F–F","最活泼的非金属单质，淡黄色气体，几乎能与所有元素反应。F–F 键因孤对排斥而较弱。",{a:[F,F],b:[[0,1]]}],
+["氯气","Chlorine","Cl–Cl","黄绿色刺激性气体，第一次世界大战曾被用作化学武器。现广泛用于自来水消毒与氯碱工业。",{a:[CL,CL],b:[[0,1]]}],
+["溴","Bromine","Br–Br","常温下唯一的液态非金属单质，红棕色、易挥发。用于阻燃剂、感光材料与医药中间体。",{a:[BR,BR],b:[[0,1]]}],
+["碘","Iodine","I–I","紫黑色固体，易升华成紫色蒸气。是人体必需的微量元素（甲状腺激素成分），碘伏是常用消毒剂。",{a:[I,I],b:[[0,1]]}],
+["二氧化硫","Sulfur Dioxide","O=S=O（弯曲形）","含硫燃料燃烧的主要污染物，酸雨的元凶之一。食品工业中用作防腐剂与抗氧化剂（如葡萄酒）。",{a:[S,O,O],b:[[0,1,2],[0,2,2]]}],
+["三氧化硫","Sulfur Trioxide","SO₃（平面三角形）","硫酸工业的中间体，与水剧烈反应生成硫酸。气态为平面三角形，固态存在多种聚合形态。",{a:[S,O,O,O],b:[[0,1,2],[0,2,2],[0,3,2]]}],
+["硫酸","Sulfuric Acid","(HO)₂SO₂","最重要的无机强酸，化工产量常被视为国家工业水平的指标。浓硫酸具强脱水性与氧化性。",{a:[S,O,O,O,O],b:[[0,1,2],[0,2,2],[0,3],[0,4]]}],
+["硝酸","Nitric Acid","HO–NO₂","三大强酸之一，具强氧化性，能使铁、铝钝化。用于制造化肥、炸药与染料。",{a:[N,O,O,O],b:[[0,1,2],[0,2],[0,3]],v:{3:1}}],
+["磷酸","Phosphoric Acid","(HO)₃PO","中强三元酸，是可乐型饮料的酸味剂，也是磷肥与磷酸盐工业的基础。生物体内磷酸化反应的核心试剂。",{a:[P,O,O,O,O],b:[[0,1,2],[0,2],[0,3],[0,4]]}],
+["碳酸","Carbonic Acid","(HO)₂CO","二氧化碳溶于水形成的弱酸，很不稳定。是血液酸碱缓冲体系（碳酸氢盐缓冲）的核心。",{a:[C,O,O,O],b:[[0,1,2],[0,2],[0,3]]}],
+["氯化氢","Hydrogen Chloride","H–Cl","其水溶液即盐酸。人体胃液的主要成分，帮助消化与杀菌。工业上用于酸洗与有机合成。",{a:[CL],b:[]}],
+["氢氰酸","Hydrogen Cyanide","H–C≡N","直线形剧毒分子，抑制细胞色素氧化酶阻断呼吸链。苦杏仁中的氰苷水解可释放 HCN。工业上用于合成尼龙。",{a:[C,N],b:[[0,1,3]]}],
+["六氟化硫","Sulfur Hexafluoride","SF₆（正八面体）","六个氟原子呈正八面体包围硫原子。化学性质极其稳定，是高压电气设备的绝缘气体，也是强效温室气体。",{a:[S,...Array(6).fill(F)],b:[[0,1],[0,2],[0,3],[0,4],[0,5],[0,6]]}],
+["尿素","Urea","H₂N–CO–NH₂","哺乳动物蛋白质代谢的终产物，第一种由无机物人工合成的有机物（维勒，1828），宣告'生命力论'破产。现为最重要的氮肥。",{a:[C,O,N,N],b:[[0,1,2],[0,2],[0,3]]}],
+["甘氨酸","Glycine","H₂N–CH₂–COOH","最简单的氨基酸，唯一无手性中心的蛋白质氨基酸。在中枢神经系统中充当抑制性神经递质。",{a:[N,C,C,O,O],b:[[0,1],[1,2],[2,3,2],[2,4]]}],
+["丙氨酸","Alanine","CH₃–CH(NH₂)–COOH","含手性中心的 α-氨基酸，侧链为甲基。葡萄糖-丙氨酸循环在肌肉与肝脏间转运氨基。",{a:[N,C,C,C,O,O],b:[[0,1],[1,2],[1,3],[2,4,2],[2,5]]}],
+["谷氨酸","Glutamic Acid","HOOC–CH(NH₂)–CH₂–CH₂–COOH","含两个羧基的酸性氨基酸，其钠盐即味精（谷氨酸钠）。是中枢神经系统最主要的兴奋性神经递质。",{a:[N,C,C,O,O,C,C,C,O,O],b:[[0,1],[1,2],[2,3,2],[2,4],[1,5],[5,6],[6,7],[7,8,2],[7,9]]}],
+["赖氨酸","Lysine","H₂N–CH(COOH)–(CH₂)₄–NH₂","含两个氨基的碱性必需氨基酸，谷物蛋白中常为第一限制氨基酸。其 ε-氨基参与蛋白质交联与修饰。",{a:[N,C,C,O,O,C,C,C,C,N],b:[[0,1],[1,2],[2,3,2],[2,4],[1,5],[5,6],[6,7],[7,8],[8,9]]}],
+["半胱氨酸","Cysteine","HS–CH₂–CH(NH₂)–COOH","含巯基（–SH）的氨基酸，两个半胱氨酸可氧化形成二硫键，对维持蛋白质空间结构至关重要。",{a:[N,C,C,O,O,C,S],b:[[0,1],[1,2],[2,3,2],[2,4],[1,5],[5,6]]}],
+["吡啶","Pyridine","六元芳环 C₅H₅N","苯环中一个 CH 被 N 取代的芳香杂环，氮上孤对电子不参与芳香性故呈碱性。广泛用作溶剂与有机碱。",{a:[C,C,C,C,C,N],b:RING(6,1.5)}],
+["嘧啶","Pyrimidine","六元芳环 C₄H₄N₂","1,3-位含两个氮的芳香杂环，是 DNA/RNA 中胞嘧啶、胸腺嘧啶、尿嘧啶的母核结构。",{a:[N,C,N,C,C,C],b:RING(6,1.5)}],
+["腺嘌呤","Adenine","6-氨基嘌呤","DNA 双螺旋中的两种嘌呤碱基之一，与胸腺嘧啶通过两条氢键配对。也是 ATP 能量分子的碱基部分。",{a:[N,C,N,C,C,C,N,C,N,N],b:[[0,1,1.5],[1,2,1.5],[2,3,1.5],[3,4,1.5],[4,5,1.5],[5,0,1.5],[4,6,1.5],[6,7,1.5],[7,8,1.5],[8,3,1.5],[5,9]],h:{8:1}}],
+["鸟嘌呤","Guanine","2-氨基-6-氧嘌呤","与胞嘧啶形成三条氢键的嘌呤碱基，G-C 配对含量越高 DNA 热稳定性越强。鸟粪中最早发现而得名。",{a:[N,C,N,C,C,C,N,C,N,N,O],b:[[0,1,1.5],[1,2,1.5],[2,3,1.5],[3,4,1.5],[4,5,1.5],[5,0,1.5],[4,6,1.5],[6,7,1.5],[7,8,1.5],[8,3,1.5],[1,9],[5,10,2]],h:{0:1,8:1}}],
+["胞嘧啶","Cytosine","4-氨基-2-氧嘧啶","三种嘧啶碱基之一，与鸟嘌呤配对。其甲基化修饰（5-甲基胞嘧啶）是表观遗传调控的重要机制。",{a:[N,C,N,C,C,C,O,N],b:[[0,1,1.5],[1,2,1.5],[2,3,1.5],[3,4,1.5],[4,5,1.5],[5,0,1.5],[1,6,2],[3,7]],h:{0:1}}],
+["胸腺嘧啶","Thymine","5-甲基尿嘧啶","DNA 特有的嘧啶碱基（RNA 中为尿嘧啶），与腺嘌呤配对。紫外线可引起相邻胸腺嘧啶二聚化导致 DNA 损伤。",{a:[N,C,N,C,C,C,O,O,C],b:[[0,1,1.5],[1,2,1.5],[2,3,1.5],[3,4,1.5],[4,5,1.5],[5,0,1.5],[1,6,2],[3,7,2],[4,8]],h:{0:1,2:1}}],
+["尿嘧啶","Uracil","2,4-二氧嘧啶","RNA 中替代胸腺嘧啶的碱基，与腺嘌呤配对。其衍生物 5-氟尿嘧啶是经典的抗癌化疗药物。",{a:[N,C,N,C,C,C,O,O],b:[[0,1,1.5],[1,2,1.5],[2,3,1.5],[3,4,1.5],[4,5,1.5],[5,0,1.5],[1,6,2],[3,7,2]],h:{0:1,2:1}}],
+["葡萄糖","Glucose","吡喃环结构 C₆H₁₂O₆","最重要的单糖，血糖的主要成分，细胞呼吸的核心燃料。水溶液中主要以六元吡喃环形式存在。",{a:[O,C,C,C,C,C,O,O,O,O,C,O],b:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,0],[1,6],[2,7],[3,8],[4,9],[5,10],[10,11]]}],
+["果糖","Fructose","呋喃环结构 C₆H₁₂O₆","最甜的天然糖，与葡萄糖互为同分异构体。主要以五元呋喃环存在，是蔗糖与果葡糖浆的组成单糖。",{a:[O,C,C,C,C,C,C,O,O,O,O,O],b:[[0,1],[1,2],[2,3],[3,4],[4,0],[4,5],[5,11],[1,6],[6,7],[1,8],[2,9],[3,10]]}],
+["蔗糖","Sucrose","葡萄糖–O–果糖（二糖）","日常食糖，由葡萄糖与果糖经糖苷键连接的二糖。是植物体内糖分运输的主要形式，从甘蔗与甜菜中提取。",{a:[O,C,C,C,C,C,O,O,O,C,O,O,C,C,C,C,C,C,O,O,O,O,O],b:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,0],[2,6],[3,7],[4,8],[5,9],[9,10],[1,22],[11,12],[12,13],[13,14],[14,15],[15,11],[15,16],[16,18],[12,17],[17,19],[13,20],[14,21],[12,22]]}],
+["维生素C","Ascorbic Acid","烯二醇内酯 C₆H₈O₆","即抗坏血酸，水溶性维生素，强抗氧化剂。人体不能自行合成，缺乏导致坏血病。烯二醇结构是其还原性的来源。",{a:[O,C,C,C,C,O,O,O,C,C,O,O],b:[[0,1],[1,2],[2,3,2],[3,4],[4,0],[1,5,2],[2,6],[3,7],[4,8],[8,9],[8,10],[9,11]]}],
+["咖啡因","Caffeine","1,3,7-三甲基黄嘌呤","咖啡、茶中的中枢兴奋剂，通过拮抗腺苷受体驱散睡意。属于甲基黄嘌呤类生物碱，是世界上使用最广的精神活性物质。",{a:[N,C,N,C,C,C,N,C,N,O,O,C,C,C],b:[[0,1,1.5],[1,2,1.5],[2,3,1.5],[3,4,1.5],[4,5,1.5],[5,0,1.5],[4,6,1.5],[6,7,1.5],[7,8,1.5],[8,3,1.5],[1,9,2],[5,10,2],[0,11],[2,12],[6,13]]}],
+["阿司匹林","Aspirin","2-乙酰氧基苯甲酸","乙酰水杨酸，1899 年拜耳上市，史上应用最广的药物之一。通过不可逆乙酰化 COX 酶发挥解热镇痛与抗血栓作用。",{a:[...CARB(6),C,O,O,O,C,O,C],b:[...RING(6,1.5),[0,6],[6,7,2],[6,8],[1,9],[9,10],[10,11,2],[10,12]]}],
+["对乙酰氨基酚","Paracetamol","p-HO–C₆H₄–NHCOCH₃","扑热息痛，最常用的解热镇痛药之一，对胃刺激小于阿司匹林。过量使用会导致肝损伤，需严格控制剂量。",{a:[...CARB(6),O,N,C,O,C],b:[...RING(6,1.5),[0,6],[3,7],[7,8],[8,9,2],[8,10]]}],
+["布洛芬","Ibuprofen","异丁苯丙酸","非甾体抗炎药（NSAID），通过抑制环氧合酶减少前列腺素合成。其疗效主要来自 S 构型对映体，是WHO基本药物。",{a:[...CARB(6),C,C,C,O,O,C,C,C,C],b:[...RING(6,1.5),[0,6],[6,7],[6,8],[8,9,2],[8,10],[3,11],[11,12],[12,13],[12,14]]}],
+["多巴胺","Dopamine","3,4-二羟基苯乙胺","关键的儿茶酚胺类神经递质，主导奖赏回路与运动控制。帕金森病即源于黑质多巴胺能神经元退化。",{a:[...CARB(6),O,O,C,C,N],b:[...RING(6,1.5),[0,6],[1,7],[3,8],[8,9],[9,10]]}],
+["血清素","Serotonin","5-羟色胺（吲哚乙胺）","即 5-羟色胺，调节情绪、睡眠与食欲的单胺类递质。SSRI 类抗抑郁药通过抑制其再摄取发挥作用。",{a:[C,C,C,C,C,C,C,C,N,O,C,C,N],b:[[0,1,1.5],[1,2,1.5],[2,3,1.5],[3,4,1.5],[4,5,1.5],[5,0,1.5],[5,6,1.5],[6,7,1.5],[7,8,1.5],[8,4,1.5],[0,9],[6,10],[10,11],[11,12]],h:{8:1}}],
+["肾上腺素","Epinephrine","儿茶酚乙胺衍生物","应激激素，'战斗或逃跑'反应的核心介质。可使心率加快、支气管扩张，是过敏性休克急救的首选药物。",{a:[...CARB(6),O,O,C,O,C,N,C],b:[...RING(6,1.5),[0,6],[1,7],[3,8],[8,9],[8,10],[10,11],[11,12]]}],
+["尼古丁","Nicotine","3-(1-甲基-2-吡咯烷基)吡啶","烟草中的主要成瘾性生物碱，激动烟碱型乙酰胆碱受体。含吡啶环与吡咯烷环两个含氮杂环。",{a:[C,C,C,C,C,N,C,N,C,C,C,C],b:[[0,1,1.5],[1,2,1.5],[2,3,1.5],[3,4,1.5],[4,5,1.5],[5,0,1.5],[2,6],[6,7],[7,8],[8,9],[9,10],[10,6],[7,11]]}],
+["薄荷醇","Menthol","2-异丙基-5-甲基环己醇","薄荷精油的主要成分，激活 TRPM8 冷觉受体产生清凉感。广泛用于药品、食品与日化产品。",{a:[...CARB(6),O,C,C,C,C],b:[...RING(6),[0,6],[1,7],[7,8],[7,9],[4,10]]}],
+["柠檬烯","Limonene","单萜 C₁₀H₁₆","柑橘类果皮香气的主要来源，含一个环内双键和一个异丙烯基。常用作天然香料与绿色溶剂。",{a:[...CARB(6),C,C,C,C],b:[[0,1,2],[1,2],[2,3],[3,4],[4,5],[5,0],[1,6],[4,7],[7,8,2],[7,9]]}],
+["香草醛","Vanillin","4-羟基-3-甲氧基苯甲醛","香草豆的主要香气成分，世界用量最大的食品香料之一。目前主要通过化学合成或生物转化大规模生产。",{a:[...CARB(6),C,O,O,C,O],b:[...RING(6,1.5),[0,6],[6,7,2],[2,8],[8,9],[3,10]]}],
+["辣椒素","Capsaicin","香草酰胺类 C₁₈H₂₇NO₃","辣椒辣味的来源，激动 TRPV1 痛觉/热觉受体产生灼烧感。斯科维尔辣度即以其为基准测定，外用可镇痛。",{a:[...CARB(6),C,N,C,O,...CARB(9),O,C,O],b:[...RING(6,1.5),[0,6],[6,7],[7,8],[8,9,2],[8,10],[10,11],[11,12],[12,13],[13,14],[14,15,2],[15,16],[16,17],[16,18],[2,19],[19,20],[3,21]]}],
+["胆固醇","Cholesterol","甾醇 C₂₇H₄₆O","四环甾体骨架连接异辛基侧链，是动物细胞膜的重要组分和胆汁酸、甾体激素、维生素D的合成前体。",{c27:true,a:[...CARB(27),O],b:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,0],[4,6,2],[6,7],[7,8],[8,9],[9,5],[9,10],[10,11],[11,12],[12,13],[13,8],[13,14],[14,15],[15,16],[16,12],[12,17],[5,18],[16,19],[19,20],[19,21],[21,22],[22,23],[23,24],[24,25],[24,26],[2,27]]}],
+["富勒烯","Fullerene C₆₀","截角二十面体","由 60 个碳原子构成的足球形分子（12 个五元环+20 个六元环），1985 年发现，开启了碳纳米材料时代，发现者获 1996 年诺贝尔化学奖。",{c60:true,a:CARB(60),b:[]}],
+["三硝基甲苯","TNT","2,4,6-三硝基甲苯","黄色结晶炸药，化学性质稳定、便于储存，是最著名的军用炸药。爆炸能量的计量单位（吨 TNT 当量）即以它命名。",{a:[...CARB(7),N,O,O,N,O,O,N,O,O],b:[...RING(6,1.5),[0,6],[1,7],[7,8,2],[7,9],[3,10],[10,11,2],[10,12],[5,13],[13,14,2],[13,15]],v:{9:1,12:1,15:1}}]
+];
+
+/* ---- 富勒烯 C60：截角二十面体程序化生成 ---- */
+function buildC60(){
+  const t=(1+Math.sqrt(5))/2;
+  const V=[[-1,t,0],[1,t,0],[-1,-t,0],[1,-t,0],[0,-1,t],[0,1,t],[0,-1,-t],[0,1,-t],[t,0,-1],[t,0,1],[-t,0,-1],[-t,0,1]]
+    .map(v=>{const l=Math.hypot(...v);return v.map(x=>x/l);});
+  const E=[];
+  for(let i=0;i<12;i++)for(let j=i+1;j<12;j++){
+    const d=Math.hypot(V[i][0]-V[j][0],V[i][1]-V[j][1],V[i][2]-V[j][2]);
+    if(d<1.1)E.push([i,j]); // 归一化后边长≈1.05
+  }
+  const pts=[],bonds=[],near={}; // near[v] = [截点索引...]
+  E.forEach(([a,b])=>{
+    const va=V[a],vb=V[b];
+    const p1=va.map((x,k)=>x+(vb[k]-x)/3);
+    const p2=va.map((x,k)=>x+2*(vb[k]-x)/3);
+    const i1=pts.length, i2=pts.length+1;
+    pts.push(p1,p2);
+    bonds.push([i1,i2,1.5]); // 原棱上的键（六元环-六元环共用边）
+    (near[a]=near[a]||[]).push(i1); (near[b]=near[b]||[]).push(i2);
+  });
+  // 每个原顶点周围的 5 个截点连成五元环
+  for(const v in near){
+    const ring=near[v]; if(ring.length!==5)continue;
+    const n=V[v];
+    // 建局部坐标系，按角度排序
+    const ref=Math.abs(n[1])<0.9?[0,1,0]:[1,0,0];
+    let u=[n[1]*ref[2]-n[2]*ref[1],n[2]*ref[0]-n[0]*ref[2],n[0]*ref[1]-n[1]*ref[0]];
+    const ul=Math.hypot(...u);u=u.map(x=>x/ul);
+    const w=[n[1]*u[2]-n[2]*u[1],n[2]*u[0]-n[0]*u[2],n[0]*u[1]-n[1]*u[0]];
+    const sorted=ring.slice().sort((A,B)=>{
+      const a=pts[A],b=pts[B];
+      const ang=p=>Math.atan2(p[0]*w[0]+p[1]*w[1]+p[2]*w[2],p[0]*u[0]+p[1]*u[1]+p[2]*u[2]);
+      return ang(a)-ang(b);
+    });
+    for(let k=0;k<5;k++)bonds.push([sorted[k],sorted[(k+1)%5],1]);
+  }
+  return {a:pts.map(()=>C), b:bonds, coords:pts.map(p=>p.map(x=>x*0.8))};
+}
+
+/* ---- 骨架 -> 原子/键（自动补氢 + 力导向布局） ---- */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+
+function buildMolecule(skel, idx){
+  if(skel.c60){ const g=buildC60(); return finalize(g.a.map((e,i)=>({e,p:g.coords[i]})), g.b.map(x=>({a:x[0],b:x[1],o:x[2]})), true); }
+  const atoms=skel.a.map(e=>({e}));
+  const bonds=skel.b.map(x=>({a:x[0],b:x[1],o:x[2]||1}));
+  atoms.forEach((at,i)=>{
+    const v=(skel.v&&skel.v[i]!=null)?skel.v[i]:VAL[at.e];
+    let s=0;bonds.forEach(bd=>{if(bd.a===i||bd.b===i)s+=bd.o;});
+    at.h=Math.max(0,Math.round(v-s))+((skel.h&&skel.h[i])||0);
+  });
+  layoutHeavy(atoms,bonds,idx);
+  placeHydrogens(atoms,bonds);
+  return finalize(atoms,bonds,false);
+
+  function finalize(atoms,bonds,isC60){
+    // 元素统计 / Hill 分子式 / 相对分子质量
+    const counts={};
+    atoms.forEach(a=>counts[a.e]=(counts[a.e]||0)+1);
+    let mw=0;for(const e in counts)mw+=MASS[e]*counts[e];
+    const hill=['C','H',...Object.keys(counts).filter(e=>e!=='C'&&e!=='H').sort()]
+      .filter(e=>counts[e]).map(e=>e+(counts[e]>1?counts[e]:'')).join('');
+    return {atoms,bonds,counts,mw,hill};
+  }
+}
+
+function bondLen(e1,e2,o){
+  if(e1==='H'&&e2==='H')return 0.55;
+  if(e1==='H'||e2==='H')return 0.82;
+  return o===3?1.14:o===2?1.24:1.42;
+}
+
+function layoutHeavy(atoms,bonds,seed){
+  const n=atoms.length, rnd=mulberry32(seed*7919+13);
+  atoms.forEach((at,i)=>{
+    const t=i*2.39996, r=0.8+i*0.16;
+    at.p=[Math.cos(t)*r,Math.sin(t)*r,(rnd()-0.5)*1.6];
+  });
+  const step=900;
+  for(let it=0;it<step;it++){
+    const F=atoms.map(()=>[0,0,0]);
+    const cool=1-it/step;
+    bonds.forEach(({a,b,o})=>{
+      const pa=atoms[a].p,pb=atoms[b].p;
+      let dx=pb[0]-pa[0],dy=pb[1]-pa[1],dz=pb[2]-pa[2];
+      const d=Math.max(0.01,Math.hypot(dx,dy,dz));
+      const f=(d-bondLen(atoms[a].e,atoms[b].e,o))*0.16/d;
+      dx*=f;dy*=f;dz*=f;
+      F[a][0]+=dx;F[a][1]+=dy;F[a][2]+=dz;
+      F[b][0]-=dx;F[b][1]-=dy;F[b][2]-=dz;
+    });
+    for(let i=0;i<n;i++)for(let j=i+1;j<n;j++){
+      let dx=atoms[j].p[0]-atoms[i].p[0],dy=atoms[j].p[1]-atoms[i].p[1],dz=atoms[j].p[2]-atoms[i].p[2];
+      const d=Math.max(0.15,Math.hypot(dx,dy,dz));
+      if(d<2.1){const f=(2.1-d)*0.05/d;dx*=f;dy*=f;dz*=f;
+        F[i][0]-=dx;F[i][1]-=dy;F[i][2]-=dz;F[j][0]+=dx;F[j][1]+=dy;F[j][2]+=dz;}
+    }
+    atoms.forEach((at,i)=>{
+      F[i][0]-=at.p[0]*0.004;F[i][1]-=at.p[1]*0.004;F[i][2]-=at.p[2]*0.004;
+      const m=Math.max(...F[i].map(Math.abs));
+      const s=(m>0.35?0.35/m:1)*cool;
+      at.p[0]+=F[i][0]*s;at.p[1]+=F[i][1]*s;at.p[2]+=F[i][2]*s;
+    });
+  }
+}
+
+function placeHydrogens(atoms,bonds){
+  atoms.forEach((at,i)=>{
+    if(!at.h)return;
+    const nb=[];
+    bonds.forEach(bd=>{
+      if(bd.a===i)nb.push(atoms[bd.b].p);
+      else if(bd.b===i)nb.push(atoms[bd.a].p);
+    });
+    let ax=0,ay=0,az=0;
+    nb.forEach(p=>{let dx=p[0]-at.p[0],dy=p[1]-at.p[1],dz=p[2]-at.p[2];
+      const l=Math.hypot(dx,dy,dz);ax+=dx/l;ay+=dy/l;az+=dz/l;});
+    let al=Math.hypot(ax,ay,az);
+    let axis= al>0.01 ? [-ax/al,-ay/al,-az/al] : [0,1,0];
+    // 垂直基
+    const ref=Math.abs(axis[1])<0.9?[0,1,0]:[1,0,0];
+    let u=[axis[1]*ref[2]-axis[2]*ref[1],axis[2]*ref[0]-axis[0]*ref[2],axis[0]*ref[1]-axis[1]*ref[0]];
+    const ul=Math.hypot(...u);u=u.map(x=>x/ul);
+    const w=[axis[1]*u[2]-axis[2]*u[1],axis[2]*u[0]-axis[0]*u[2],axis[0]*u[1]-axis[1]*u[0]];
+    const th=at.h===1?0:1.23; // 与轴的夹角（≈70.5°，四面体补角）
+    const d=bondLen(at.e,'H',1);
+    for(let k=0;k<at.h;k++){
+      const phi=2*Math.PI*k/at.h+(at.h===2?Math.PI/2:0);
+      const dir=[
+        axis[0]*Math.cos(th)+(u[0]*Math.cos(phi)+w[0]*Math.sin(phi))*Math.sin(th),
+        axis[1]*Math.cos(th)+(u[1]*Math.cos(phi)+w[1]*Math.sin(phi))*Math.sin(th),
+        axis[2]*Math.cos(th)+(u[2]*Math.cos(phi)+w[2]*Math.sin(phi))*Math.sin(th)];
+      atoms.push({e:'H',p:[at.p[0]+dir[0]*d,at.p[1]+dir[1]*d,at.p[2]+dir[2]*d]});
+      bonds.push({a:i,b:atoms.length-1,o:1});
+    }
+  });
+}
+/* ================= PURE LOGIC END ================= */
+
+/* ================= 预计算全部 100 个分子 ================= */
+const MODELS=MOLS.map((m,i)=>buildMolecule(m[4],i));
+MOLS.forEach((m,i)=>{ m.formula=MODELS[i].hill; m.mw=MODELS[i].mw; });
+
+/* ================= Three.js 场景 ================= */
+const holder=document.getElementById('beakerCanvas');
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(38,1,0.1,100);
+camera.position.set(0,0.4,8);
+const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+holder.appendChild(renderer.domElement);
+
+scene.add(new THREE.AmbientLight(0xffffff,0.42));
+const key=new THREE.DirectionalLight(0xffffff,1.05); key.position.set(4,6,6); scene.add(key);
+const fill=new THREE.DirectionalLight(0xfff2d8,0.4); fill.position.set(-5,-2,4); scene.add(fill);
+const rim=new THREE.PointLight(0xd8a04a,0.45,30); rim.position.set(-3,4,-5); scene.add(rim);
+
+let molGroup=null;
+const matCache={}, geoCache={};
+function matOf(e){ if(!matCache[e]) matCache[e]=new THREE.MeshPhongMaterial({color:CPK[e],shininess:90,specular:0x777777}); return matCache[e]; }
+function sphereGeo(r){ const k=r.toFixed(2); if(!geoCache[k]) geoCache[k]=new THREE.SphereGeometry(r,28,20); return geoCache[k]; }
+const bondMatCache={};
+function bondMat(e){ if(!bondMatCache[e]) bondMatCache[e]=new THREE.MeshPhongMaterial({color:CPK[e],shininess:40,specular:0x333333}); return bondMatCache[e]; }
+const H_BOND_MAT=new THREE.MeshPhongMaterial({color:0xb8c0cc,shininess:40,specular:0x333333});
+
+function cylBetween(p1,p2,r,mat){
+  const dir=new THREE.Vector3().subVectors(p2,p1);
+  const len=dir.length();
+  const geo=new THREE.CylinderGeometry(r,r,len,14,1);
+  const mesh=new THREE.Mesh(geo,mat);
+  mesh.position.copy(p1).addScaledVector(dir,0.5);
+  mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dir.clone().normalize());
+  return mesh;
+}
+
+function buildMesh(mol){
+  const g=new THREE.Group();
+  const pos=mol.atoms.map(a=>new THREE.Vector3(...a.p));
+  // 居中
+  const center=pos.reduce((s,p)=>s.add(p),new THREE.Vector3()).divideScalar(pos.length);
+  pos.forEach(p=>p.sub(center));
+  // 原子球
+  mol.atoms.forEach((a,i)=>{
+    const s=new THREE.Mesh(sphereGeo(RAD[a.e]),matOf(a.e));
+    s.position.copy(pos[i]); g.add(s);
+  });
+  // 化学键（重原子键按端点原子配色半半拼接）
+  mol.bonds.forEach(({a,b,o})=>{
+    const p1=pos[a],p2=pos[b];
+    const e1=mol.atoms[a].e,e2=mol.atoms[b].e;
+    const isH=(e1==='H'||e2==='H');
+    const mid=p1.clone().add(p2).multiplyScalar(0.5);
+    const draw=(off,r)=>{
+      const q1=p1.clone().add(off),q2=p2.clone().add(off),qm=mid.clone().add(off);
+      if(isH){ g.add(cylBetween(q1,q2,r,H_BOND_MAT)); }
+      else{
+        g.add(cylBetween(q1,qm,r,bondMat(e1)));
+        g.add(cylBetween(qm,q2,r,bondMat(e2)));
+      }
+    };
+    if(o===2){
+      const axis=new THREE.Vector3().subVectors(p2,p1).normalize();
+      let perp=new THREE.Vector3().crossVectors(axis,new THREE.Vector3(0,1,0));
+      if(perp.length()<0.1)perp=new THREE.Vector3().crossVectors(axis,new THREE.Vector3(1,0,0));
+      perp.normalize().multiplyScalar(0.085);
+      draw(perp,0.068); draw(perp.clone().negate(),0.068);
+    }else if(o===3){
+      const axis=new THREE.Vector3().subVectors(p2,p1).normalize();
+      let perp=new THREE.Vector3().crossVectors(axis,new THREE.Vector3(0,1,0));
+      if(perp.length()<0.1)perp=new THREE.Vector3().crossVectors(axis,new THREE.Vector3(1,0,0));
+      perp.normalize();
+      const perp2=new THREE.Vector3().crossVectors(axis,perp).normalize();
+      for(let k=0;k<3;k++){
+        const ang=2*Math.PI*k/3;
+        draw(perp.clone().multiplyScalar(Math.cos(ang)*0.09).addScaledVector(perp2,Math.sin(ang)*0.09),0.055);
+      }
+    }else{
+      draw(new THREE.Vector3(), o===1.5?0.08:(isH?0.07:0.095));
+    }
+  });
+  // 适配缩放
+  let maxR=0.001; pos.forEach((p,i)=>{maxR=Math.max(maxR,p.length()+RAD[mol.atoms[i].e]);});
+  const target=mol.atoms.length>40?2.45:2.1;
+  g.scale.setScalar(Math.min(1.6,target/maxR));
+  return g;
+}
+
+function loadMolecule(i){
+  if(molGroup){ scene.remove(molGroup); molGroup.traverse(o=>{if(o.geometry&&!Object.values(geoCache).includes(o.geometry))o.geometry.dispose();}); }
+  molGroup=buildMesh(MODELS[i]);
+  scene.add(molGroup);
+}
+
+function resize(){
+  const w=holder.clientWidth,h=holder.clientHeight;
+  if(!w||!h)return;
+  renderer.setSize(w,h);
+  camera.aspect=w/h;camera.updateProjectionMatrix();
+}
+window.addEventListener('resize',resize);
+
+/* ================= UI 更新 ================= */
+const SUB={'0':'₀','1':'₁','2':'₂','3':'₃','4':'₄','5':'₅','6':'₆','7':'₇','8':'₈','9':'₉'};
+const sub=s=>s.replace(/\d/g,d=>SUB[d]);
+let cur=0;
+
+function updatePanels(i){
+  const m=MOLS[i],mod=MODELS[i];
+  document.getElementById('tagZh').textContent=m[0];
+  document.getElementById('tagEn').textContent=m[1];
+  document.getElementById('tagFormula').textContent=m.formula;
+  document.getElementById('curIdx').textContent=String(i+1).padStart(3,'0');
+  document.getElementById('infoZh').textContent=m[0];
+  document.getElementById('infoEn').textContent=m[1];
+  document.getElementById('infoFormula').textContent=sub(m.formula);
+  document.getElementById('infoStruct').textContent=m[2];
+  document.getElementById('infoMw').textContent=mod.mw.toFixed(2);
+  document.getElementById('infoDesc').textContent=m[3];
+  const heavy=mod.atoms.length-(mod.counts.H||0);
+  document.getElementById('infoAtoms').textContent=`共 ${mod.atoms.length} 个原子（重原子 ${heavy} + 氢 ${mod.counts.H||0}）`;
+  const chips=Object.keys(mod.counts).sort((a,b)=>mod.counts[b]-mod.counts[a]).map(e=>
+    `<div class="chip"><span class="cdot" style="background:${CPK[e]};color:${CPK[e]}"></span><b>${ELE_CN[e]} ${e}</b><span class="n">× ${mod.counts[e]}</span></div>`).join('');
+  document.getElementById('infoElems').innerHTML=chips;
+  // 列表高亮
+  document.querySelectorAll('.mol-item.active').forEach(el=>el.classList.remove('active'));
+  const item=document.getElementById('mol-'+i);
+  if(item){ item.classList.add('active'); item.scrollIntoView({block:'nearest',behavior:'smooth'}); }
+  // 右侧重新触发段落动画
+  const body=document.getElementById('infoBody');
+  body.querySelectorAll('.sec').forEach(s=>{s.style.animation='none';s.offsetHeight;s.style.animation='';});
+}
+
+/* ================= 左侧列表 ================= */
+const listEl=document.getElementById('molList');
+function renderList(filter=''){
+  const f=filter.trim().toLowerCase();
+  let html='';
+  MOLS.forEach((m,i)=>{
+    if(f && !(m[0].toLowerCase().includes(f)||m[1].toLowerCase().includes(f)||m.formula.toLowerCase().includes(f)))return;
+    html+=`<div class="mol-item${i===cur?' active':''}" id="mol-${i}" data-i="${i}">
+      <span class="idx">${String(i+1).padStart(3,'0')}</span>
+      <span class="nm">${m[0]}</span><span class="en">${m.formula}</span></div>`;
+  });
+  listEl.innerHTML=html||'<div style="padding:20px;text-align:center;color:var(--txt3);font-size:12px">未找到匹配分子</div>';
+}
+renderList();
+document.getElementById('totalIdx').textContent=MOLS.length;
+document.getElementById('totalCount').textContent=MOLS.length;
+listEl.addEventListener('click',e=>{
+  const it=e.target.closest('.mol-item'); if(!it)return;
+  const i=+it.dataset.i;
+  goTo(i, i>cur?1:-1);
+});
+document.getElementById('searchInput').addEventListener('input',e=>renderList(e.target.value));
+
+/* ================= 切换动画 ================= */
+const wrap=document.getElementById('beakerWrap');
+let animating=false;
+function goTo(i,dir=1){
+  i=((i%MOLS.length)+MOLS.length)%MOLS.length;
+  if(i===cur||animating)return;
+  animating=true;
+  wrap.style.transition='transform .3s cubic-bezier(.5,0,.3,1),opacity .28s';
+  wrap.style.transform=`translateX(${dir*-72}px) scale(.97)`;
+  wrap.style.opacity=0;
+  setTimeout(()=>{
+    cur=i; loadMolecule(i); updatePanels(i);
+    wrap.style.transition='none';
+    wrap.style.transform=`translateX(${dir*72}px) scale(.97)`;
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      wrap.style.transition='transform .38s cubic-bezier(.2,.8,.25,1),opacity .3s';
+      wrap.style.transform='translateX(0) scale(1)';
+      wrap.style.opacity=1;
+      setTimeout(()=>animating=false,380);
+    }));
+  },290);
+}
+document.getElementById('prevBtn').onclick=()=>goTo(cur-1,-1);
+document.getElementById('nextBtn').onclick=()=>goTo(cur+1,1);
+window.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT')return;
+  if(e.key==='ArrowLeft')goTo(cur-1,-1);
+  if(e.key==='ArrowRight')goTo(cur+1,1);
+});
+
+/* ================= 拖拽：左右切换 / 其余方向旋转 ================= */
+let drag=null;
+const edgeL=document.getElementById('edgeL'),edgeR=document.getElementById('edgeR');
+wrap.addEventListener('pointerdown',e=>{
+  drag={x:e.clientX,y:e.clientY,mode:null,moved:false};
+  wrap.classList.add('grabbing');
+  wrap.setPointerCapture(e.pointerId);
+});
+wrap.addEventListener('pointermove',e=>{
+  if(!drag)return;
+  const dx=e.clientX-drag.x,dy=e.clientY-drag.y;
+  if(!drag.mode){
+    if(Math.hypot(dx,dy)>9) drag.mode=Math.abs(dx)>Math.abs(dy)*1.15?'swipe':'rotate';
+    else return;
+  }
+  if(drag.mode==='swipe'){
+    wrap.style.transition='none';
+    wrap.style.transform=`translateX(${dx*0.55}px)`;
+    wrap.style.opacity=1-Math.min(Math.abs(dx)/420,0.45);
+    edgeL.style.opacity=dx>40?Math.min((dx-40)/60,1):0;
+    edgeR.style.opacity=dx<-40?Math.min((-dx-40)/60,1):0;
+  }else if(molGroup){
+    molGroup.rotation.y+=e.movementX*0.0085;
+    molGroup.rotation.x=Math.max(-1.3,Math.min(1.3,molGroup.rotation.x+e.movementY*0.0085));
+  }
+});
+function endDrag(e){
+  if(!drag)return;
+  const dx=e.clientX-drag.x;
+  edgeL.style.opacity=0;edgeR.style.opacity=0;
+  wrap.classList.remove('grabbing');
+  if(drag.mode==='swipe'&&Math.abs(dx)>90){
+    const d=drag=null;
+    goTo(dx<0?cur+1:cur-1, dx<0?1:-1);
+  }else{
+    drag=null;
+    wrap.style.transition='transform .4s cubic-bezier(.2,.8,.25,1),opacity .3s';
+    wrap.style.transform='translateX(0) scale(1)';
+    wrap.style.opacity=1;
+  }
+}
+wrap.addEventListener('pointerup',endDrag);
+wrap.addEventListener('pointercancel',endDrag);
+
+/* ================= 渲染循环 ================= */
+const clock=new THREE.Clock();
+(function animate(){
+  requestAnimationFrame(animate);
+  const t=clock.getElapsedTime();
+  if(molGroup){
+    if(!drag||drag.mode!=='rotate') molGroup.rotation.y+=0.0038;
+    molGroup.position.y=Math.sin(t*0.9)*0.07;
+  }
+  renderer.render(scene,camera);
+})();
+
+/* ================= 初始化 ================= */
+loadMolecule(0);
+updatePanels(0);
+resize();
+setTimeout(resize,60);
+</script>
+
+<script>
+/* 嵌入幻灯片：将 PgUp/PgDn/空格/Home/End 转发给父页用于翻页；
+   方向键留给 demo 自身交互，不转发 */
+(function(){
+  if (window.parent === window) return;
+  var KEYS = {PageUp:1, PageDown:1, ' ':1, Home:1, End:1};
+  window.addEventListener('keydown', function(e){
+    if (!KEYS[e.key]) return;
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    try {
+      window.parent.dispatchEvent(new window.parent.KeyboardEvent('keydown', {key: e.key}));
+      e.preventDefault();
+    } catch(err){}
+  }, true);
+})();
+</script>
+</body>
+</html>

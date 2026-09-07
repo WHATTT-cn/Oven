@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bibliothèque · 对角书架</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f3efe7;
+    --ink:#1d1a16;
+    --ink-soft:#6f675c;
+    --line:#d9d2c4;
+    --accent:#a4553a;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%;overflow:hidden}
+  body{
+    background:
+      radial-gradient(1200px 800px at 85% 8%, #faf7f0 0%, transparent 60%),
+      radial-gradient(900px 700px at 8% 92%, #ece5d7 0%, transparent 55%),
+      var(--bg);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    user-select:none;
+    cursor:default;
+  }
+
+  /* ---------- Header ---------- */
+  header{
+    position:fixed;top:34px;left:42px;z-index:50;pointer-events:none;
+  }
+  header .kicker{
+    font-size:10px;letter-spacing:.42em;text-transform:uppercase;
+    color:var(--accent);font-weight:500;margin-bottom:10px;
+  }
+  header h1{
+    font-family:'Cormorant Garamond',serif;font-weight:600;
+    font-size:clamp(28px,3.4vw,44px);line-height:1.02;letter-spacing:.01em;
+  }
+  header h1 em{font-style:italic;font-weight:500;color:var(--ink-soft)}
+  header .hint{
+    margin-top:14px;font-size:11px;letter-spacing:.14em;color:var(--ink-soft);
+    display:flex;gap:18px;font-weight:300;
+  }
+  header .hint span{display:flex;align-items:center;gap:7px}
+  header .hint i{
+    width:5px;height:5px;border-radius:50%;background:var(--accent);display:inline-block;
+    font-style:normal;opacity:.75;
+  }
+
+  /* ---------- Counter ---------- */
+  #counter{
+    position:fixed;top:44px;right:46px;z-index:50;text-align:right;pointer-events:none;
+  }
+  #counter .no{
+    font-family:'Cormorant Garamond',serif;font-size:40px;font-weight:600;line-height:1;
+  }
+  #counter .of{
+    font-size:10px;letter-spacing:.3em;color:var(--ink-soft);margin-top:6px;text-transform:uppercase;
+  }
+
+  /* ---------- Stage / Books ---------- */
+  #stage{position:fixed;inset:0;z-index:10}
+  .book{
+    position:absolute;
+    width:var(--bw);height:var(--bh);
+    left:0;top:0;
+    border-radius:3px 8px 8px 3px;
+    cursor:pointer;
+    transition:left .58s cubic-bezier(.22,.9,.24,1),
+               top .58s cubic-bezier(.22,.9,.24,1),
+               transform .42s cubic-bezier(.22,.9,.3,1.2),
+               box-shadow .42s ease;
+    box-shadow:0 10px 24px -12px rgba(40,30,18,.45),
+               0 2px 6px -2px rgba(40,30,18,.25);
+    transform:rotate(var(--tilt));
+    overflow:hidden;
+  }
+  /* spine */
+  .book::before{
+    content:"";position:absolute;left:0;top:0;bottom:0;width:9px;
+    background:linear-gradient(90deg,rgba(0,0,0,.32),rgba(0,0,0,.06) 55%,rgba(255,255,255,.14));
+  }
+  /* page edge */
+  .book::after{
+    content:"";position:absolute;right:0;top:2px;bottom:2px;width:3px;
+    background:repeating-linear-gradient(180deg,#efe9dc 0 2px,#e2dac8 2px 3px);
+    border-radius:0 2px 2px 0;opacity:.9;
+  }
+  .cover{
+    position:absolute;inset:0;padding:16px 14px 14px 22px;
+    display:flex;flex-direction:column;
+    color:#f7f2e8;
+  }
+  .cover .frame{
+    position:absolute;inset:9px 9px 9px 15px;
+    border:1px solid rgba(247,242,232,.34);border-radius:2px;pointer-events:none;
+  }
+  .cover .cat{
+    font-size:7.5px;letter-spacing:.3em;text-transform:uppercase;opacity:.72;font-weight:400;
+  }
+  .cover .title{
+    font-family:'Cormorant Garamond',serif;font-weight:600;
+    font-size:15.5px;line-height:1.22;margin-top:9px;letter-spacing:.015em;
+  }
+  .cover .author{
+    margin-top:auto;font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;opacity:.85;font-weight:300;
+  }
+  .cover .num{
+    font-family:'Cormorant Garamond',serif;font-style:italic;
+    font-size:13px;opacity:.7;margin-top:4px;
+  }
+  .book:hover{
+    transform:rotate(var(--tilt)) translateY(-10px);
+    box-shadow:0 22px 38px -14px rgba(40,30,18,.5),
+               0 4px 10px -3px rgba(40,30,18,.28);
+  }
+  .book.pulled{
+    transform:rotate(-1.5deg) translateY(-42px) scale(1.07);
+    box-shadow:0 42px 60px -18px rgba(40,30,18,.55),
+               0 8px 18px -6px rgba(40,30,18,.35);
+    z-index:200!important;
+  }
+  .book.pulled::before{background:linear-gradient(90deg,rgba(0,0,0,.42),rgba(0,0,0,.1) 55%,rgba(255,255,255,.2))}
+
+  /* ---------- 3D Canvas ---------- */
+  #gl-wrap{
+    position:fixed;z-index:5;
+    left:clamp(8px,3vw,50px);top:50%;transform:translateY(-46%);
+    width:min(36vw,400px);height:min(36vw,400px);
+    cursor:grab;
+  }
+  #gl-wrap:active{cursor:grabbing}
+  #gl-wrap .tag{
+    position:absolute;left:50%;bottom:-30px;transform:translateX(-50%);
+    font-size:9px;letter-spacing:.34em;text-transform:uppercase;color:var(--ink-soft);
+    white-space:nowrap;font-weight:300;
+  }
+  #gl{display:block;width:100%;height:100%}
+
+  /* ---------- Control Panel ---------- */
+  #panel{
+    position:fixed;right:38px;bottom:34px;z-index:60;
+    width:248px;padding:20px 20px 16px;
+    background:rgba(250,247,240,.78);
+    backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+    border:1px solid rgba(29,26,22,.09);
+    border-radius:14px;
+    box-shadow:0 18px 40px -18px rgba(40,30,18,.3);
+  }
+  #panel h2{
+    font-size:9.5px;letter-spacing:.34em;text-transform:uppercase;
+    color:var(--ink-soft);font-weight:500;margin-bottom:14px;
+    display:flex;justify-content:space-between;align-items:center;
+  }
+  #panel h2 b{color:var(--accent);font-weight:500}
+  .ctl{margin-bottom:13px}
+  .ctl label{
+    display:flex;justify-content:space-between;
+    font-size:10.5px;letter-spacing:.08em;color:var(--ink);
+    margin-bottom:6px;font-weight:400;
+  }
+  .ctl label output{font-family:'Cormorant Garamond',serif;font-size:13px;font-style:italic;color:var(--accent)}
+  .ctl input[type=range]{
+    width:100%;height:2px;appearance:none;-webkit-appearance:none;
+    background:var(--line);border-radius:2px;outline:none;cursor:pointer;
+  }
+  .ctl input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;width:13px;height:13px;border-radius:50%;
+    background:var(--bg);border:2px solid var(--ink);
+    transition:transform .15s ease;
+  }
+  .ctl input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25)}
+  .ctl input[type=range]::-moz-range-thumb{
+    width:11px;height:11px;border-radius:50%;background:var(--bg);border:2px solid var(--ink);
+  }
+  .row{display:flex;gap:10px;align-items:center;margin-top:2px}
+  .row select{
+    flex:1;min-width:0;max-width:132px;font-family:'Inter',sans-serif;font-size:10.5px;letter-spacing:.06em;
+    padding:6px 8px;border-radius:8px;border:1px solid var(--line);
+    background:transparent;color:var(--ink);outline:none;cursor:pointer;
+  }
+  .switch{display:flex;align-items:center;gap:7px;font-size:10.5px;letter-spacing:.06em;cursor:pointer;white-space:nowrap;flex-shrink:0;line-height:1}
+  .switch input{accent-color:var(--accent);width:13px;height:13px;cursor:pointer}
+  .divider{height:1px;background:var(--line);margin:14px -20px 13px;opacity:.7}
+
+  /* ---------- Footer caption ---------- */
+  #caption{
+    position:fixed;left:50%;top:40px;transform:translateX(-50%);
+    z-index:50;pointer-events:none;text-align:center;max-width:320px;
+  }
+  #caption .bar{margin:0 auto 12px;}
+  #caption .bt{
+    font-family:'Cormorant Garamond',serif;font-size:21px;font-weight:600;line-height:1.15;
+    transition:opacity .3s ease;
+  }
+  #caption .ba{
+    margin-top:6px;font-size:10px;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--ink-soft);transition:opacity .3s ease;
+  }
+  #caption .bar{
+    width:34px;height:1px;background:var(--accent);margin-bottom:12px;
+  }
+
+  /* ---------- Reader Overlay ---------- */
+  #reader{
+    position:fixed;inset:0;z-index:400;display:none;
+    align-items:center;justify-content:center;
+  }
+  #reader.open{display:flex}
+  #reader-backdrop{
+    position:absolute;inset:0;
+    background:rgba(24,19,13,.44);
+    backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);
+    animation:rFade .35s ease;cursor:pointer;
+  }
+  @keyframes rFade{from{opacity:0}to{opacity:1}}
+  .spread{
+    position:relative;z-index:2;
+    width:min(90vw,960px);height:min(82vh,640px);
+    display:flex;perspective:2400px;
+    filter:drop-shadow(0 46px 60px rgba(20,14,8,.5));
+    animation:spreadIn .48s cubic-bezier(.22,.9,.3,1.15);
+  }
+  @keyframes spreadIn{from{opacity:0;transform:translateY(36px) scale(.93)}to{opacity:1;transform:none}}
+  .page,.face{
+    height:100%;overflow:hidden;position:relative;
+    padding:50px 46px 62px;color:#2b251c;
+    background-color:#faf7ee;
+  }
+  .page{width:50%}
+  .page.left{
+    border-radius:10px 3px 3px 10px;
+    background-image:linear-gradient(270deg,rgba(90,70,40,.16) 0%,rgba(90,70,40,0) 7%);
+  }
+  .page.right{
+    border-radius:3px 10px 10px 3px;
+    background-image:linear-gradient(90deg,rgba(90,70,40,.2) 0%,rgba(90,70,40,0) 7%);
+  }
+  /* flipping leaf */
+  .leaf{
+    position:absolute;top:0;left:50%;width:50%;height:100%;
+    transform-style:preserve-3d;transform-origin:left center;
+    display:none;z-index:6;
+  }
+  .face{position:absolute;inset:0;width:100%;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+  .face.back{transform:rotateY(180deg)}
+  .face.right-face{
+    border-radius:3px 10px 10px 3px;
+    background-image:linear-gradient(90deg,rgba(90,70,40,.2) 0%,rgba(90,70,40,0) 7%);
+  }
+  .face.left-face{
+    border-radius:10px 3px 3px 10px;
+    background-image:linear-gradient(270deg,rgba(90,70,40,.16) 0%,rgba(90,70,40,0) 7%);
+  }
+  /* spine line */
+  .spread::before{
+    content:"";position:absolute;left:50%;top:0;bottom:0;width:1px;
+    background:rgba(90,70,40,.22);z-index:5;pointer-events:none;
+  }
+  /* page typography */
+  .pg-cat{
+    font-size:9px;letter-spacing:.34em;text-transform:uppercase;
+    color:var(--accent);font-weight:500;margin-bottom:14px;
+  }
+  .pg-title{
+    font-family:'Cormorant Garamond',serif;font-weight:600;
+    font-size:27px;line-height:1.15;margin-bottom:20px;
+  }
+  .pg-body p{
+    font-family:'Cormorant Garamond',serif;font-size:15.8px;
+    line-height:1.78;margin-bottom:13px;text-align:justify;
+  }
+  .pg-body p:first-child::first-letter{
+    font-size:2.05em;line-height:1;float:left;
+    padding:2px 8px 0 0;color:var(--accent);font-weight:600;
+  }
+  .pg-num{
+    position:absolute;bottom:18px;left:0;right:0;text-align:center;
+    font-family:'Cormorant Garamond',serif;font-style:italic;
+    font-size:13px;color:#8a7f6d;letter-spacing:.18em;
+  }
+  .pg-titlepage{
+    height:100%;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;text-align:center;
+  }
+  .pg-titlepage .tp-cat{
+    font-size:9px;letter-spacing:.4em;text-transform:uppercase;
+    color:var(--accent);margin-bottom:22px;
+  }
+  .pg-titlepage .tp-title{
+    font-family:'Cormorant Garamond',serif;font-weight:600;
+    font-size:34px;line-height:1.18;max-width:300px;
+  }
+  .pg-titlepage .tp-rule{width:38px;height:1px;background:var(--accent);margin:24px 0}
+  .pg-titlepage .tp-author{
+    font-size:10.5px;letter-spacing:.28em;text-transform:uppercase;color:#6f675c;
+  }
+  .pg-titlepage .tp-ed{
+    margin-top:46px;font-size:8.5px;letter-spacing:.3em;
+    text-transform:uppercase;color:#a99e8a;
+  }
+  /* turn hints */
+  .page.left::after,.page.right::after{
+    position:absolute;bottom:15px;font-size:15px;color:var(--accent);
+    opacity:0;transition:opacity .25s;pointer-events:none;
+  }
+  .page.left::after{content:"←";left:22px}
+  .page.right::after{content:"→";right:22px}
+  .page.left:hover::after,.page.right:hover::after{opacity:.6}
+  .page.left.no-prev::after,.page.right.no-next::after{display:none}
+  .page{cursor:pointer}
+  #reader .hint-close{
+    position:absolute;top:26px;right:36px;z-index:3;
+    font-size:9.5px;letter-spacing:.32em;text-transform:uppercase;
+    color:rgba(247,242,232,.85);pointer-events:none;
+  }
+
+  @media (max-width:760px){
+    #gl-wrap{width:52vw;height:52vw;left:0;top:auto;bottom:120px;transform:none}
+    #caption{display:none}
+    #panel{right:14px;bottom:14px;width:212px;padding:16px}
+    header{left:20px;top:22px}
+    #counter{right:20px;top:26px}
+    .spread{width:94vw;height:76vh}
+    .page,.face{padding:30px 22px 52px}
+    .pg-body p{font-size:14px;line-height:1.7}
+    .pg-title{font-size:21px}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="kicker">Diagonal Shelf · N° 07</div>
+  <h1>Bibliothèque<br><em>设计之书</em></h1>
+  <div class="hint">
+    <span><i></i>滚轮 逐本推移</span>
+    <span><i></i>点击 抽出一册</span>
+    <span><i></i>拖拽 旋转雕塑</span>
+  </div>
+</header>
+
+<div id="counter">
+  <div class="no" id="curNo">01</div>
+  <div class="of">/ 10 Volumes</div>
+</div>
+
+<div id="gl-wrap">
+  <canvas id="gl"></canvas>
+  <div class="tag">Objet — Drag to Rotate</div>
+</div>
+
+<div id="stage"></div>
+
+<div id="caption">
+  <div class="bar"></div>
+  <div class="bt" id="capTitle">The Design of Everyday Things</div>
+  <div class="ba" id="capAuthor">Don Norman</div>
+</div>
+
+<div id="panel">
+  <h2>设置 <b>Paramètres</b></h2>
+  <div class="ctl">
+    <label>书本间距 Spacing <output id="oGap">150 px</output></label>
+    <input type="range" id="rGap" min="104" max="280" value="150" step="2">
+  </div>
+  <div class="ctl">
+    <label>对角线角度 Angle <output id="oAng">32°</output></label>
+    <input type="range" id="rAng" min="18" max="58" value="32" step="1">
+  </div>
+  <div class="divider"></div>
+  <div class="ctl">
+    <label>雕塑旋转 X <output id="oRx">24°</output></label>
+    <input type="range" id="rRx" min="0" max="360" value="24" step="1">
+  </div>
+  <div class="ctl">
+    <label>雕塑旋转 Y <output id="oRy">38°</output></label>
+    <input type="range" id="rRy" min="0" max="360" value="38" step="1">
+  </div>
+  <div class="row">
+    <select id="shapeSel">
+      <option value="ico" selected>二十面体 Icosahedron</option>
+      <option value="knot">环结 Torus Knot</option>
+      <option value="sphere">球体 Sphere</option>
+      <option value="capsule">胶囊 Capsule</option>
+    </select>
+    <label class="switch"><input type="checkbox" id="autoRot" checked>自动旋转</label>
+  </div>
+</div>
+
+<div id="reader">
+  <div id="reader-backdrop"></div>
+  <div class="hint-close">点击书页外 · 合上书 Click Outside to Close</div>
+  <div class="spread">
+    <div class="page left" id="pageL"></div>
+    <div class="page right" id="pageR"></div>
+    <div class="leaf" id="leaf">
+      <div class="face front"></div>
+      <div class="face back"></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+  "use strict";
+
+  /* ================= Data ================= */
+  const BOOKS = [
+    {t:"The Design of Everyday Things", a:"Don Norman",            c:"Design",      h:14,  s:34, l:46},
+    {t:"Grid Systems",                  a:"Josef Müller-Brockmann",c:"Typography",  h:206, s:26, l:40},
+    {t:"Thinking with Type",            a:"Ellen Lupton",          c:"Typography",  h:348, s:24, l:38},
+    {t:"Interaction of Color",          a:"Josef Albers",          c:"Colour",      h:46,  s:38, l:44},
+    {t:"The Elements of Typographic Style", a:"Robert Bringhurst", c:"Typography",  h:262, s:22, l:36},
+    {t:"As Little Design as Possible",  a:"Sophie Lovell · Rams",  c:"Industrial",  h:96,  s:20, l:40},
+    {t:"Ways of Seeing",                a:"John Berger",           c:"Criticism",   h:176, s:26, l:38},
+    {t:"The Vignelli Canon",            a:"Massimo Vignelli",      c:"Design",      h:0,   s:32, l:42},
+    {t:"Designing Design",              a:"Kenya Hara",            c:"Aesthetics",  h:220, s:14, l:42},
+    {t:"A Designer's Art",              a:"Paul Rand",             c:"Graphic",     h:288, s:26, l:40}
+  ];
+  const N = BOOKS.length;
+
+  /* ================= State ================= */
+  const state = {
+    gap: 150,        // spacing between books along the diagonal (px)
+    angle: 32,       // diagonal angle in degrees
+    offset: 0,       // scroll step offset (integer, grows infinitely)
+    pulled: null,    // currently pulled-out book element
+    bw: 148, bh: 208 // book size
+  };
+
+  const stage = document.getElementById('stage');
+  const curNo = document.getElementById('curNo');
+  const capTitle = document.getElementById('capTitle');
+  const capAuthor = document.getElementById('capAuthor');
+
+  /* ================= Build books ================= */
+  const bookEls = BOOKS.map((b, i) => {
+    const el = document.createElement('div');
+    el.className = 'book';
+    el.style.setProperty('--bw', state.bw + 'px');
+    el.style.setProperty('--bh', state.bh + 'px');
+    el.style.setProperty('--tilt', '-5deg');
+    el.style.background =
+      `linear-gradient(158deg, hsl(${b.h},${b.s}%,${b.l + 9}%) 0%, hsl(${(b.h + 22) % 360},${b.s + 4}%,${b.l - 8}%) 100%)`;
+    el.innerHTML =
+      `<div class="cover">
+         <div class="frame"></div>
+         <div class="cat">${b.c}</div>
+         <div class="title">${b.t}</div>
+         <div class="author">${b.a}</div>
+         <div class="num">Vol. ${String(i + 1).padStart(2, '0')}</div>
+       </div>`;
+    el.dataset.idx = i;
+    el.addEventListener('click', () => togglePull(el));
+    stage.appendChild(el);
+    return el;
+  });
+
+  /* slot of book i in [0..N-1]; slot 0 sits top-right, grows to bottom-left */
+  function slotOf(i){
+    return ((i - state.offset) % N + N) % N;
+  }
+
+  function layout(){
+    const W = window.innerWidth, H = window.innerHeight;
+    const rad = state.angle * Math.PI / 180;
+    const dx = -Math.cos(rad) * state.gap;
+    const dy =  Math.sin(rad) * state.gap;
+    // anchor: slot 0 near top-right
+    const ax = W - state.bw - Math.max(60, W * 0.075);
+    const ay = Math.max(46, H * 0.085);
+
+    for (let i = 0; i < N; i++){
+      const s = slotOf(i);
+      const el = bookEls[i];
+      el.style.left = (ax + dx * s) + 'px';
+      el.style.top  = (ay + dy * s) + 'px';
+      if (el !== state.pulled) el.style.zIndex = 100 - s; // nearer (top-right) on top
+    }
+    updateCaption();
+  }
+
+  function updateCaption(){
+    // book currently at slot 0 = the "leading" volume
+    let lead = 0;
+    for (let i = 0; i < N; i++) if (slotOf(i) === 0) { lead = i; break; }
+    curNo.textContent = String(lead + 1).padStart(2, '0');
+    capTitle.style.opacity = 0; capAuthor.style.opacity = 0;
+    setTimeout(() => {
+      capTitle.textContent = BOOKS[lead].t;
+      capAuthor.textContent = BOOKS[lead].a;
+      capTitle.style.opacity = 1; capAuthor.style.opacity = 1;
+    }, 180);
+  }
+
+  /* ================= Pull-out on click ================= */
+  function togglePull(el){
+    if (state.pulled === el){
+      openReader(+el.dataset.idx);   // second click on a pulled book -> open it
+    } else {
+      if (state.pulled) state.pulled.classList.remove('pulled');
+      state.pulled = el;
+      el.classList.add('pulled');
+    }
+    layout();
+  }
+
+  /* ================= Wheel: step one book at a time, infinite ================= */
+  let acc = 0, locked = false;
+  function step(dir){
+    state.offset += dir;
+    // keep the number small to avoid float issues over long sessions
+    if (state.offset >  N * 1000) state.offset -= N * 1000;
+    if (state.offset < -N * 1000) state.offset += N * 1000;
+    layout();
+  }
+  window.addEventListener('wheel', (e) => {
+    if (locked || reader.open) return;
+    acc += e.deltaY;
+    if (Math.abs(acc) >= 42){
+      step(acc > 0 ? 1 : -1);
+      acc = 0;
+      locked = true;
+      setTimeout(() => { locked = false; }, 420);
+    }
+  }, { passive: true });
+
+  /* keyboard */
+  window.addEventListener('keydown', (e) => {
+    if (reader.open){
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') flipNext();
+      if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   flipPrev();
+      if (e.key === 'Escape') closeReader();
+      return;
+    }
+    if (e.key === 'ArrowDown' || e.key === 'ArrowRight') step(1);
+    if (e.key === 'ArrowUp'   || e.key === 'ArrowLeft')  step(-1);
+  });
+
+  /* touch swipe */
+  let ty = null;
+  window.addEventListener('touchstart', e => { ty = e.touches[0].clientY; }, { passive: true });
+  window.addEventListener('touchend', e => {
+    if (ty === null) return;
+    const d = e.changedTouches[0].clientY - ty;
+    if (Math.abs(d) > 46) step(d < 0 ? 1 : -1);
+    ty = null;
+  }, { passive: true });
+
+  window.addEventListener('resize', layout);
+
+  /* ================= Controls ================= */
+  const $ = id => document.getElementById(id);
+  $('rGap').addEventListener('input', e => {
+    state.gap = +e.target.value;
+    $('oGap').textContent = state.gap + ' px';
+    layout();
+  });
+  $('rAng').addEventListener('input', e => {
+    state.angle = +e.target.value;
+    $('oAng').textContent = state.angle + '°';
+    layout();
+  });
+
+  /* ================= 3D Object (Three.js) ================= */
+  const wrap = $('gl-wrap');
+  const renderer = new THREE.WebGLRenderer({ canvas: $('gl'), alpha: true, antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
+  camera.position.set(0, 0, 6.2);
+
+  scene.add(new THREE.AmbientLight(0xf5eede, 0.75));
+  const key = new THREE.DirectionalLight(0xfff2dd, 1.15); key.position.set(3, 4, 5); scene.add(key);
+  const rim = new THREE.DirectionalLight(0xbcc7e0, 0.65);  rim.position.set(-4, -2, -3); scene.add(rim);
+
+  const mat = new THREE.MeshStandardMaterial({
+    color: 0xb3916a, metalness: 0.55, roughness: 0.28
+  });
+  const lineMat = new THREE.LineBasicMaterial({ color: 0x1d1a16, transparent: true, opacity: 0.16 });
+
+  let mesh = null, edges = null;
+  const geometries = {
+    knot:    () => new THREE.TorusKnotGeometry(1.15, 0.36, 180, 28),
+    ico:     () => new THREE.IcosahedronGeometry(1.55, 0),
+    sphere:  () => new THREE.SphereGeometry(1.45, 48, 32),
+    capsule: () => new THREE.CylinderGeometry(0.85, 0.85, 1.6, 32)
+  };
+
+  function setShape(name){
+    if (mesh) { scene.remove(mesh); mesh.geometry.dispose(); }
+    if (edges){ scene.remove(edges); edges.geometry.dispose(); edges = null; }
+    const g = geometries[name]();
+    mesh = new THREE.Mesh(g, mat);
+    if (name === 'ico'){
+      edges = new THREE.LineSegments(new THREE.EdgesGeometry(g), lineMat);
+      mesh.add(edges);
+    }
+    mesh.rotation.set(rot.x, rot.y, 0);
+    scene.add(mesh);
+  }
+
+  const rot = { x: 24 * Math.PI / 180, y: 38 * Math.PI / 180 };
+  let autoRot = true, dragging = false, px = 0, py = 0;
+
+  setShape('ico');
+
+  function sizeGL(){
+    const r = wrap.getBoundingClientRect();
+    renderer.setSize(r.width, r.height, false);
+    camera.aspect = r.width / r.height;
+    camera.updateProjectionMatrix();
+  }
+  sizeGL();
+  window.addEventListener('resize', sizeGL);
+
+  /* drag to rotate */
+  wrap.addEventListener('pointerdown', e => {
+    dragging = true; px = e.clientX; py = e.clientY;
+    wrap.setPointerCapture(e.pointerId);
+  });
+  wrap.addEventListener('pointermove', e => {
+    if (!dragging) return;
+    rot.y += (e.clientX - px) * 0.012;
+    rot.x += (e.clientY - py) * 0.012;
+    px = e.clientX; py = e.clientY;
+    syncRotUI();
+  });
+  wrap.addEventListener('pointerup', () => dragging = false);
+  wrap.addEventListener('pointercancel', () => dragging = false);
+
+  /* rotation sliders */
+  function syncRotUI(){
+    const dx = ((rot.x * 180 / Math.PI) % 360 + 360) % 360;
+    const dy = ((rot.y * 180 / Math.PI) % 360 + 360) % 360;
+    $('rRx').value = Math.round(dx); $('oRx').textContent = Math.round(dx) + '°';
+    $('rRy').value = Math.round(dy); $('oRy').textContent = Math.round(dy) + '°';
+  }
+  $('rRx').addEventListener('input', e => { rot.x = +e.target.value * Math.PI / 180; $('oRx').textContent = e.target.value + '°'; });
+  $('rRy').addEventListener('input', e => { rot.y = +e.target.value * Math.PI / 180; $('oRy').textContent = e.target.value + '°'; });
+  $('shapeSel').addEventListener('change', e => setShape(e.target.value));
+  $('autoRot').addEventListener('change', e => autoRot = e.target.checked);
+
+  (function animate(){
+    requestAnimationFrame(animate);
+    if (autoRot && !dragging){
+      rot.y += 0.0045;
+      rot.x += 0.0012;
+      syncRotUI();
+    }
+    if (mesh) mesh.rotation.set(rot.x, rot.y, 0);
+    renderer.render(scene, camera);
+  })();
+
+  /* ================= Reader (open book / page flipping) ================= */
+  const CONTENT = [
+  { foreword:[
+    "This is a book about the small betrayals of daily life: the door that must be pushed though it begs to be pulled, the stove whose knobs lie about which burner they command. Such frustrations are not failures of the user, as we are so often told to believe, but failures of design — and they can be designed away.",
+    "The argument that follows rests on a simple faith: that the objects surrounding us should cooperate with the minds that use them. When an object's form announces its operation, when feedback answers every action, the tool disappears and only the task remains."],
+    chapters:[
+    { title:"The Psychopathology of Everyday Things", paras:[
+      "A well-designed object carries its instructions on its face. The flat plate on a door says push; the vertical handle says pull; nothing needs to be written, and nothing needs to be apologised for. When a sign reading PUSH is required, the design has already confessed its guilt.",
+      "We blame ourselves for these frictions because the objects cannot answer back. The engineer understands the mechanism, the merchant understands the price, but nobody was charged with understanding the person who would stand before the thing, confused, at seven in the morning."]},
+    { title:"Affordances and Signifiers", paras:[
+      "An affordance is a relationship: a chair affords sitting to a human body but not to a puddle of water. Affordances exist whether or not they are perceived, which is why the designer must also supply signifiers — the marks, textures and placements that point to the possibility and say, here, like this.",
+      "The confusion of the two terms has filled the world with glass doors that hide their hinges and taps that conceal their temperature. Perceived affordance is the designer's true medium; what the user believes is possible matters more than what the mechanism permits."]},
+    { title:"Design Thinking", paras:[
+      "The designer's method is a double search: outward, to find the real problem rather than the one first presented, and inward, to the catalogue of possible solutions. The two searches inform each other, for a good solution reframes the problem it solves.",
+      "This is why the brief is a beginning and not an answer. Asked for a faster horse, the thoughtful designer asks why speed is wanted, where the rider is going, and whether a road, a railway or a telephone might carry them there instead."]},
+    { title:"Human Error Is Design Error", paras:[
+      "When a valve is left open or the wrong button pressed, the report says human error, and the matter is closed. But humans err in patterned ways: we slip when tasks are monotonous, we mistake similar controls for one another, and we follow procedures that no longer fit the machine. Patterns can be anticipated, and what can be anticipated can be designed for.",
+      "The mature response to error is not blame but forgiveness built into the system: confirmations for the irreversible, undo for the hasty, constraints that make the wrong action physically impossible. Error cannot be eliminated, but its consequences can be."]},
+    { title:"The Design Challenge", paras:[
+      "Design is the art of balancing forces that pull in opposite directions: cost against quality, novelty against familiarity, the maker's convenience against the user's. There is no formula that settles these contests, only judgment sharpened by watching real people use real things.",
+      "The reward for getting it right is anonymity. Good design passes unnoticed precisely because it works; the door opens, the water runs, the page reads. The designer's monument is the absence of complaint."]}],
+    colophon:"First published in 1988 as The Psychology of Everyday Things, the book was renamed at its readers' suggestion — for what Norman describes is not psychology alone but the craft of making things understandable. It remains the founding text of user-centred design."},
+  { foreword:[
+    "This handbook proceeds from a conviction the author held without embarrassment: that order is not the enemy of expression but its instrument. The typographic grid, patiently constructed and consistently obeyed, frees the designer to attend to what the text is saying.",
+    "What follows is deliberately practical. The measurements, divisions and examples are offered not as rules for their own sake but as tools, to be mastered until their use becomes reflex and the discipline disappears into the work."],
+    chapters:[
+    { title:"The Grid as a System", paras:[
+      "The grid is a programme, not a prison. By dividing the field into equal and unequal intervals it establishes proportions in advance, so that every headline, illustration and caption finds a place that relates to every other place. The page ceases to be decorated and begins to be organised.",
+      "Working without a grid, the designer solves the same problems again on every spread and answers them slightly differently each time. The grid answers once, and the consistency of the answer is what the reader experiences as calm."]},
+    { title:"Constructing the Grid", paras:[
+      "Construction begins with the type area: its position on the page determines the margins, and its division into columns determines everything else. A text set in a single measure may need two columns, a complex journal eight or more; the number is a function of the content, never of fashion.",
+      "The depth of the page is divided in the same spirit, into horizontal fields that correspond to lines of text. When text blocks, captions and images all terminate on these divisions, the page acquires a rhythm the eye can trust."]},
+    { title:"The Eight-Field Grid", paras:[
+      "The eight-field grid is the workhorse of editorial typography: eight columns wide enough for text, combinable two by two for headings, four by four for illustration. Its virtue is not the number eight but the readiness with which it admits variety without surrendering order.",
+      "Within such a grid a photograph may occupy one field or eight, a caption may align with its image or with the column beside it, and each decision reads as intentional. Variety earned against a stable ground is variety that communicates."]},
+    { title:"Type and Leading", paras:[
+      "The choice of typeface is subordinate to the system it serves. One family, in two or three weights, will usually out-perform a menagerie of faces; contrast of size and weight, not of style, carries the hierarchy. Sans serif faces serve objective information best, their evenness matching the grid's own.",
+      "Leading — the space between lines — is as much a structural measurement as the column width. Generous leading dignifies a short text; economical leading serves a long one; but in either case the leading must be constant, for the eye learns the rhythm and stumbles when it changes."]},
+    { title:"The Grid in Practice", paras:[
+      "A grid reveals its worth over a hundred pages, not one. The single spread may charm by accident, but only a system sustains quality through an annual report, an exhibition catalogue, a journal that must appear every month under different hands.",
+      "And when the system is truly internalised, the designer may break it knowingly — an image bleeding across columns, a headline escaping its field — and the departure will carry meaning precisely because the rule was kept elsewhere."]}],
+    colophon:"Published in 1981, Grid Systems distilled three decades of Swiss practice into a working manual. It is still the book from which most designers first learn that typography is the organisation of information, not its ornament."},
+  { foreword:[
+    "Typography is what language looks like. This book examines that appearance at every scale, from the counters and serifs of a single letter to the architecture of grids that organise whole documents, treating each scale as a site where meaning is made.",
+    "The examples gathered here are meant to be used, not worshipped. Rules of typesetting exist to be understood and then, when understanding is secure, bent with intention — for typography is a living practice, renewed by every generation that sets a page."],
+    chapters:[
+    { title:"Letter", paras:[
+      "Every letter is a small machine for producing recognition. Its parts — stem, bowl, counter, serif — have names because they have functions, and the history of their shapes is the history of hands, tools and technologies negotiating with the alphabet.",
+      "Classification gives the designer a map of this territory: old style faces that remember the broad-nib pen, transitional faces of the Enlightenment, modern faces of industrial contrast, and the sans serifs that stripped the letter to its skeleton. Each family carries its era into the present text."]},
+    { title:"Text", paras:[
+      "A paragraph is a field of texture before it is a sequence of sentences. Its colour — the typographer's word for the overall grey of a text block — depends on size, leading and spacing, and the reader feels that colour before reading a single word.",
+      "Alignment is the texture's edge. Flush left respects the natural rhythm of the word space; justified text compresses and stretches that rhythm into rivers and stripes; centred text, monumental and static, belongs to invitations and gravestones rather than to books."]},
+    { title:"Hierarchy", paras:[
+      "The reader's first question is not what does it say but where do I start, and hierarchy is the answer. Size, weight and placement form a grammar of emphasis that lets the eye take in the structure of an argument at a glance.",
+      "A good hierarchy is built from few distinctions used consistently. When everything on the poster shouts, nothing is heard; when title, subtitle and body each know their station, the page speaks in a clear, modulated voice."]},
+    { title:"Grid", paras:[
+      "The grid divides space into a rational order, but its modern history is a dialogue between discipline and freedom. The Swiss made it a tool of objectivity; the deconstructivists made it visible, layered and unstable, turning the scaffold into part of the performance.",
+      "Today the grid must travel: from the fixed page to the fluid screen, where columns collapse and reflow. A modular structure that survives this transformation — that behaves like a system rather than a snapshot — is the contemporary designer's essential skill."]},
+    { title:"Type on Screen", paras:[
+      "The screen changed the material of type from ink to light, and with the material changed the rules of rendering, resolution and scale. Letterforms once drawn for paper are now hinted, compressed and redrawn by every device that carries them.",
+      "Motion adds a fourth dimension to typography. Text on screen can arrive, depart, accumulate and respond; used with restraint, animation becomes a new form of punctuation, marking emphasis in time rather than in space."]}],
+    colophon:"First published in 2004, Thinking with Type became the standard classroom companion for a generation raised between page and screen. Lupton wrote it as both critic and practitioner, and its tone — exact, generous, unafraid of pleasure — is part of its teaching."},
+  { foreword:[
+    "This book is a record of experiments, not a system of rules. Its premise, proved in decades of teaching, is that colour is the most relative of the arts' materials: a colour is what it is only next to other colours, and the eye can be trained to see this deception at work.",
+    "The studies that follow are meant to be done, not merely read. Cut the papers, make the comparisons, and discover in your own seeing that one colour can appear as two, and two as one."],
+    chapters:[
+    { title:"Colour Deceives Continually", paras:[
+      "We almost never see a colour as it physically is. The same grey advances on a red ground and retreats on a blue one; the same ochre glows in one company and dulls in another. Colour, of all visual properties, is the least stable and the most dependent on context.",
+      "This instability is not a defect to be corrected but the very medium of the art. The painter who learns to exploit it commands effects that no pigment possesses alone; the painter who ignores it is defeated by paint that changes its mind on the canvas."]},
+    { title:"One Colour Appears as Two", paras:[
+      "Place a single small square of colour on two different grounds and it will seem to be two colours. The ground subtracts its own hue from what it surrounds, shifting the small square away from itself in both hue and light.",
+      "The exercise seems like a parlour trick until its consequence is felt: no colour in a composition can be specified in isolation. What matters is not which red you choose but which red arrives, transformed by its neighbours, in the reader's eye."]},
+    { title:"Reversed Grounds", paras:[
+      "Two different colours can be made to look alike. Given grounds of opposing hue and value, a warm and a cool colour may be tuned until the eye declares them equal — a deception that demonstrates again how thoroughly the ground governs the figure.",
+      "Such studies cultivate the only instrument the colour student possesses: an educated eye. Theory can name the effect, but only practice teaches the student to see it coming."]},
+    { title:"Transparency and Illusion", paras:[
+      "Where two colour fields overlap, the eye expects a mixture, and a well-chosen third colour can impersonate that mixture perfectly. The illusion of transparency is achieved entirely with opaque paper, proof that the eye supplies the physics it assumes.",
+      "The study has practical consequences far beyond the classroom. In print, in textiles, on screens, the perception of layered translucency is a construction of relationships, available to anyone who learns to measure them."]},
+    { title:"Free Studies", paras:[
+      "The final studies abandon demonstration for play. Students pursue vibration, vanishing boundaries, colours that seem to tremble or glow, discovering that the retina itself can be made an accomplice in the picture's energy.",
+      "Albers insisted the aim was never taste but sight: to make seeing more sensitive and more articulate. The free study is where the trained eye is finally trusted to wander."]}],
+    colophon:"Interaction of Color appeared in 1963 as a folio of silkscreened plates, the summation of Albers's courses at Black Mountain College and Yale. It has since taught more artists to see than perhaps any book ever printed."},
+  { foreword:[
+    "Typography exists to honour content. This book treats the subject as a liberal art: part history, part craft, part ethics, governed by principles that can be stated and a sensibility that must be cultivated.",
+    "The rules collected here are not laws but habits of respect — for the text, for the reader, and for the long tradition of the page. Break any of them when the text demands it; but know what you are breaking, and why."],
+    chapters:[
+    { title:"Rhythm and Proportion", paras:[
+      "The page has a tempo. Set the text so that word spaces, line lengths and leading beat in a steady measure, and the reader settles into the book as into a walk; disturb the measure arbitrarily and the reader limps without knowing why.",
+      "Proportion is tempo extended through space. The golden section, the canon of page construction, the musical ratios of the Renaissance — all are attempts to give the page the internal coherence of a chord, where every dimension answers every other."]},
+    { title:"Harmony and Counterpoint", paras:[
+      "A typographic page is polyphonic: title, text, folio, marginal note, each with its own voice. The art lies in tuning these voices so they are distinguishable yet consonant, a choir rather than a crowd.",
+      "Counterpoint is achieved by controlled contrast: roman against italic, old style against a modern face, generous margins against dense text. Contrast without system is noise; system without contrast is monotony."]},
+    { title:"Choosing and Combining Type", paras:[
+      "Choose a face in which the text can be read at length without fatigue, and whose temperament suits its subject. A history of Venice and a railway timetable make different demands; the typeface that flatters one will betray the other.",
+      "Combining faces is marriage, not collage. One good family with true italics and small caps will serve almost any book; two families may be joined when their proportions agree and their duties are clearly divided; three are a crowd with a lawyer present."]},
+    { title:"The Shape of the Page", paras:[
+      "The textblock should sit on the page as a chord sits in a room: resonant, with air around it in proportion to its tone. Back margins smaller than foot, foot smaller than head, head smaller than fore-edge — the classical asymmetry keeps the double spread unified and the page alive.",
+      "Folios, running heads and ornaments are the page's furniture, and should be placed with a furniture-maker's economy. Everything on the page must earn its keep by helping the reader locate, navigate or rest."]},
+    { title:"Punctuation and Detail", paras:[
+      "The smallest characters do the most continuous work. The apostrophe must be a true apostrophe and not a tick; the dash must be an em or en as sense requires; quotation marks must curl. These are not pedantries but the vowels of written rhythm.",
+      "Detail is where typography becomes indistinguishable from editing. The typographer who corrects the spacing of an ellipsis, who hangs the punctuation into the margin, is polishing the surface on which the reader's attention glides."]}],
+    colophon:"First published in 1992, Bringhurst's manual joined the authority of a style guide to the voice of a poet. Its premise — that typography is a craft by which the reader is honoured — has made it the most quoted typographic book of its generation."},
+  { foreword:[
+    "Dieter Rams designed products for more than forty years, and this book surveys that long practice: the radios and record players, the shelving and the calculators, and above all the discipline that joined them into one continuous argument about what objects should be.",
+    "The survey is also a portrait of a method. Rams designed from the inside out, beginning with function and ending only when nothing more could be removed — as little design as possible, and no less than necessary."],
+    chapters:[
+    { title:"Ten Principles of Good Design", paras:[
+      "Good design is innovative, useful, aesthetic, understandable, honest, unobtrusive, long-lived, thorough, environmentally responsible — and, as the tenth principle concludes, as little design as possible. The list reads like common sense until one tries to live by it.",
+      "The principles were not theory extracted after the fact but working rules, tested daily against prototypes and production lines. Their endurance comes from that origin: they describe a practice, not an aspiration."]},
+    { title:"The Braun Years", paras:[
+      "At Braun, Rams found the rare alliance of designer, engineer and management that lets a philosophy survive manufacture. The SK 4 record player, the T 3 radio, the ET 66 calculator — each object is the visible residue of a hundred arguments resolved in favour of clarity.",
+      "The products were quiet where the market was loud. Rejecting the tailfin styling of the age, they offered instead a legible grid of controls, an honest surface, a promise that the object would serve for decades rather than seasons."]},
+    { title:"Function before Form", paras:[
+      "Rams's forms are not decorated functions but functions made legible. The geometry of his radios — the dial, the speaker field, the row of keys — is simply the object's logic given durable shape, so that use and appearance become the same thing.",
+      "This is why his objects age so slowly. Fashion is applied and therefore peels; structure is integral and therefore endures. A calculator of 1987 still instructs the phones carried today."]},
+    { title:"Honest Materials", paras:[
+      "An honest object does not pretend to be what it is not: plastic is allowed to be plastic, aluminium to be aluminium. The crime of styling, in Rams's account, is that it makes objects lie, and objects that lie cannot be trusted with our daily lives.",
+      "Honesty extends to the whole life of the product. It should be repairable, its surfaces should age with dignity, and its eventual retirement should burden the world as little as its manufacture did."]},
+    { title:"Less, but Better", paras:[
+      "Less, but better — weniger, aber besser — is the sentence into which the whole philosophy compresses. Less noise, fewer products, longer lives; better thinking, better making, better use. It is an economy of attention applied to the material world.",
+      "In an age of accelerating novelty the sentence has become quietly radical. It proposes that the designer's highest skill is not invention but refusal: the discipline to stop before the object begins to shout."]}],
+    colophon:"Sophie Lovell's monograph, drawing on unprecedented access to Rams's archive, appeared as the designer approached eighty. Its title is his own measure of his work: as little design as possible."},
+  { foreword:[
+    "Seeing comes before words. The child looks and recognises before it can speak, and the world we inhabit is composed of what we notice and what we are taught to overlook. These essays examine how that noticing has been arranged — by painting, by photography, by publicity — and in whose interest.",
+    "The book began as a television series, and keeps the series' method: argument conducted through images, history read from surfaces. It asks not what pictures mean but what they do, and to whom."],
+    chapters:[
+    { title:"Images and Words", paras:[
+      "The invention of the camera changed the terms of seeing. What had been unique — this painting, in this chapel, on this wall — became infinitely reproducible, and the image travelled from its home into every context that chose to receive it, acquiring new meanings at each stop.",
+      "Reproduction did not merely copy paintings; it re-valued them. When every masterpiece can be summoned onto a screen, its authority migrates from the wall to the commentary, and the question of who interprets becomes a question of power."]},
+    { title:"The Mystification of Art", paras:[
+      "A painting's meaning, Berger argues, has been systematically buried under its price. The language of experts — genius, authenticity, spiritual value — surrounds the work like a velvet rope, assuring the viewer that awe is owed before looking begins.",
+      "To demystify is not to belittle but to return the image to use. A painting is a record of how its maker saw, and of what its owner wished to possess; read that way, it tells the truth about its world more plainly than any monument."]},
+    { title:"Ways of Seeing Women", paras:[
+      "In the tradition of European painting, men act and women appear. The surveyor of woman in herself is male, the essay observes, and so she is painted as a sight — turned toward the viewer, aware of being beheld, arranged for a judgment that arrives from outside the frame.",
+      "The nude is the convention's clearest form: nakedness staged as display. To see the tradition plainly is to see the social relation it preserves — the spectator-owner and the object of his regard."]},
+    { title:"Oil Painting and Possession", paras:[
+      "The oil medium made it possible to render the texture of things — silk, land, livestock, silver — with a fidelity no earlier technique could match. And what the paintings render, above all, is ownership: the canvas celebrates what its commissioner had, or wished to seem to have.",
+      "Genre scenes of plenty, portraits girt with property, still lifes of acquired beauty: the tradition is a long inventory of possession. Seeing this does not diminish the painting's skill; it reveals what the skill was hired to do."]},
+    { title:"Publicity", paras:[
+      "Publicity is the culture of the consumer society, and its images are everywhere. It speaks to us of a future self, transformed by purchase, and it borrows the entire visual language of oil painting — its textures, its abundance, its nudes — to make the promised transformation seem already real.",
+      "Where oil painting confirmed what the owner possessed, publicity exploits what the viewer lacks. Its glamour is manufactured envy, and its true product is dissatisfaction with the life one actually leads."]}],
+    colophon:"Published in 1972 from the BBC series, Ways of Seeing has never left print. Its seven essays — four with words, three with images alone — remain the most widely read argument ever made about the politics of looking."},
+  { foreword:[
+    "This small book is a distillation: the principles by which Massimo Vignelli practised for half a century, set down so that students might have, at the beginning, what he possessed only at the end. It is deliberately brief — a canon, not an encyclopedia.",
+    "Its tone is that of the studio: direct, opinionated, impatient with fashion. Design, Vignelli insists, is a profession with a discipline, and the discipline can be stated plainly enough to fit in a hundred pages."],
+    chapters:[
+    { title:"Semantics", paras:[
+      "Before any form is chosen, the designer must understand what the thing means. Semantics is the research of meaning: what is this object for, who will meet it, in what world will it live? Design that skips this inquiry is decoration looking for a surface.",
+      "Meaning, once found, disciplines everything that follows. A corporate identity, a timetable, a chair — each has a semantic core, and every later decision is judged by whether it serves or obscures that core."]},
+    { title:"Syntactics", paras:[
+      "Syntactics is the grammar of form: how elements relate — their proportions, alignments, intervals and sequences. A page, like a sentence, is well formed or ill formed quite apart from what it says, and the eye detects the difference instantly.",
+      "The grid is syntactics made visible. It does not prescribe where things must go; it guarantees that wherever they go, they will relate. Consistency of relationship is what the reader experiences as elegance."]},
+    { title:"Pragmatics", paras:[
+      "Pragmatics is use: the test of the designed thing in the hands of its audience. A map that cannot be read at speed, a package that cannot be opened, a chair that photographs better than it sits — each fails pragmatically, however handsome its semantics.",
+      "The three dimensions — semantics, syntactics, pragmatics — are one discipline, not a menu. Vignelli's own work moves through them as through the rooms of a single house."]},
+    { title:"Grids and White Space", paras:[
+      "White space is not the absence of content but its frame and its breath. Generous margins concentrate attention; crowded pages dissipate it. The designer who fears emptiness fills the page with noise and calls it information.",
+      "The Vignelli grids — for the New York subway map, for corporate manuals, for this very book — demonstrate the same economy: few columns, strict alignment, and the courage to leave much of the page unfilled."]},
+    { title:"Typefaces", paras:[
+      "Vignelli famously declared that a designer needs but a handful of typefaces — Garamond, Bodoni, Century, Futura, Helvetica, Times — and spent a career proving it. Variety of expression comes from size, weight, spacing and colour, not from an endless wardrobe of fonts.",
+      "The provocation conceals a serious point about discipline. The typeface library is infinite and seductive; the designer who masters a few faces deeply will out-perform the one who knows many superficially, just as a writer's style grows by constraint."]}],
+    colophon:"The Vignelli Canon was self-published in 2009 and given away free, in the spirit of the master class it contains. It remains the shortest complete statement of the modernist design conscience."},
+  { foreword:[
+    "This book is a collection of enquiries rather than a doctrine. Kenya Hara — graphic designer, curator, art director of MUJI — asks what design is when it is stripped of novelty and noise, and answers with exhibitions, objects and thoughts gathered over two decades.",
+    "The enquiries share one direction: toward the ordinary. Design, for Hara, is not the manufacture of the remarkable but the rediscovery of the everyday, made vivid by exact attention."],
+    chapters:[
+    { title:"Re-Design", paras:[
+      "The RE-DESIGN exhibition asked architects and designers to remake the most ordinary objects: the match, the diaper, the roll of toilet paper, the macaroni. The exercise revealed how much invention sleeps inside things we have stopped seeing.",
+      "Shigeru Ban's square-core toilet paper, which resists the roll and so restrains consumption, shows the method: change one constraint, and an object's whole ethic changes with it. Re-design is not restyling; it is re-thinking the agreement between object and user."]},
+    { title:"Haptic", paras:[
+      "Design addresses the eye, but the body is its real client. The HAPTIC exhibition explored design for the senses — objects that inform through weight, texture, temperature — proposing that intelligence is distributed across the whole skin.",
+      "A paper remote control that inflates when active, a floor of gel that receives the foot: such works ask what information becomes when it is felt rather than read. The answer is a design that wakes the senses the city has dulled."]},
+    { title:"White", paras:[
+      "White, for Hara, is not a colour but a condition: the state in which things have not yet been decided. It is the colour of potentiality — paper before printing, rice before the meal, the MUJI shelf before the product arrives.",
+      "To design with white is to design the conditions of emergence rather than the thing itself. It requires confidence in absence, a trust that the user will complete what the maker has deliberately left open."]},
+    { title:"Senseware", paras:[
+      "Hara proposes the word senseware for whatever excites the human senses — the technology of perception, older than any machine. Paper is senseware; so is lacquer, so is the woven mat. Design is the craft of arranging senseware so that life is felt more acutely.",
+      "The idea relocates design's dignity. Its goal is not novelty of form but acuity of experience — the cool rim of a cup, the drag of a brush, the precise resistance of a well-made drawer."]},
+    { title:"Emptiness", paras:[
+      "Emptiness — the aesthetic engine Hara finds in Japanese culture: the empty vessel that can receive anything, the plain room that grants the guest's imagination its freedom. MUJI's no-brand plainness is this principle industrialised.",
+      "Emptiness is not minimalism as style but generosity as method. The unmarked product, the silent advertisement, the white flag raised at the Expo: each declines to dictate meaning, and so each becomes capable of holding anyone's."]}],
+    colophon:"Designing Design appeared in Japanese in 2003 and in English in 2007. Part essay collection, part exhibition record, it is the clearest account of the philosophy that made MUJI a byword for thoughtful plainness."},
+  { foreword:[
+    "Paul Rand wrote as he designed: quickly, wittily, and with a logician's intolerance for nonsense. The essays collected here defend a simple proposition — that design is a form of thinking, and that its jokes, like its grids, must be earned.",
+    "Alongside the essays stand the artifacts: the trademarks, posters and book jackets through which Rand taught American business to speak modernism. Word and image together make the case that play and precision are the same virtue."],
+    chapters:[
+    { title:"Design and the Play Instinct", paras:[
+      "Design problems are solved by play the way equations are solved by insight: suddenly, after preparation, and with a pleasure that feels like discovery. Rand defends doodling, juxtaposition and absurdity as serious instruments of the studio.",
+      "Play without purpose is amusement; purpose without play is drudgery. The designer's art lies in keeping the two in suspension, so that the solution arrives wearing a smile but standing exactly where the brief required it to stand."]},
+    { title:"The Trademark", paras:[
+      "A trademark is a promise compressed to a mark. It must be distinctive enough to be remembered, simple enough to be reproduced anywhere, and durable enough to outlast the fashions of its birth. The best ones — Rand's among them — seem inevitable only after they exist.",
+      "The IBM letters, the ABC circle, the Westinghouse W: each was a long reduction, the removal of everything inessential until the idea could no longer be simplified without disappearing. A logo is the residue of a hundred rejected drawings."]},
+    { title:"The Beautiful and the Useful", paras:[
+      "The old quarrel between art and utility is, for Rand, a false one. The striped pole of the barber, the shape of the Shaker box, the proportions of a well-set table: usefulness and beauty arrive together whenever a thing is made with full attention to its purpose.",
+      "Design is therefore not applied art but a way of making. When function is understood deeply enough, its form pleases; when decoration is pasted on, both beauty and utility are insulted."]},
+    { title:"The Politics of Design", paras:[
+      "Every design decision is, in miniature, a decision about how people will live: what they will find legible, comfortable, dignified. The designer who accepts every brief accepts the world the briefs describe; the designer who chooses is practising a quiet politics.",
+      "Rand's own practice made the argument concrete. By giving corporations identities of wit and clarity, he insisted that commerce need not be ugly, and that the public street deserved the same intelligence as the museum wall."]},
+    { title:"Good Design Is Good Will", paras:[
+      "The phrase condenses the ethic: design is a transaction of respect between maker and user. The well-made page, the honest package, the clear timetable — each says to a stranger, your time and intelligence were considered here.",
+      "It is, finally, why the craft matters. Most designed things are anonymous and their makers unthanked; yet the sum of their courtesy is the texture of everyday life. Good will, drawn precisely, is the designer's signature."]}],
+    colophon:"A Designer's Art was published in 1985, gathering forty years of essays and images. Rand called design the silent ambassador of a brand; the book is the ambassador's own memoir, told in equal parts type and wit."}
+  ];
+
+  const reader = { open:false, book:0, spread:0, pages:[], animating:false };
+  const pageL = $('pageL'), pageR = $('pageR'), leaf = $('leaf');
+  const leafFront = leaf.querySelector('.front'), leafBack = leaf.querySelector('.back');
+
+  function buildPages(bi){
+    const c = CONTENT[bi];
+    const pages = [{ titlePage:true, b:BOOKS[bi] }];
+    pages.push({ cat:"Foreword", title:"A Word Before", paras:c.foreword });
+    c.chapters.forEach(ch => pages.push({ cat:BOOKS[bi].c, title:ch.title, paras:ch.paras }));
+    pages.push({ cat:"Colophon", title:"About This Edition",
+      paras:[c.colophon,
+        "Set in Cormorant Garamond on warm recycled stock. Prepared for the Bibliothèque diagonal shelf — Volume " + String(bi + 1).padStart(2, '0') + " of ten."] });
+    pages.forEach((p, i) => p.num = i === 0 ? "" : "·  " + (i + 1) + "  ·");
+    return pages;
+  }
+
+  function pageHTML(p){
+    if (p.titlePage){
+      return `<div class="pg-titlepage">
+        <div class="tp-cat">${p.b.c}</div>
+        <div class="tp-title">${p.b.t}</div>
+        <div class="tp-rule"></div>
+        <div class="tp-author">${p.b.a}</div>
+        <div class="tp-ed">Bibliothèque · Reader's Edition</div>
+      </div>`;
+    }
+    return `<div class="pg-cat">${p.cat}</div>
+      <h3 class="pg-title">${p.title}</h3>
+      <div class="pg-body">${p.paras.map(t => `<p>${t}</p>`).join('')}</div>
+      <div class="pg-num">${p.num}</div>`;
+  }
+
+  function renderSpread(){
+    const s = reader.spread, pg = reader.pages;
+    pageL.innerHTML = pageHTML(pg[2 * s]);
+    pageR.innerHTML = pageHTML(pg[2 * s + 1]);
+    pageL.classList.toggle('no-prev', s === 0);
+    pageR.classList.toggle('no-next', s >= pg.length / 2 - 1);
+  }
+
+  function openReader(bi){
+    reader.open = true; reader.book = bi; reader.spread = 0; reader.animating = false;
+    reader.pages = buildPages(bi);
+    leaf.style.display = 'none';
+    renderSpread();
+    $('reader').classList.add('open');
+  }
+  function closeReader(){
+    if (!reader.open) return;
+    reader.open = false;
+    $('reader').classList.remove('open');
+    if (state.pulled){ state.pulled.classList.remove('pulled'); state.pulled = null; }
+    layout();
+  }
+
+  function onLeafDone(commit){
+    leaf.addEventListener('transitionend', function h(){
+      leaf.removeEventListener('transitionend', h);
+      leaf.style.display = 'none';
+      commit();
+      reader.animating = false;
+    });
+  }
+
+  /* click right page -> flip forward */
+  function flipNext(){
+    if (!reader.open || reader.animating) return;
+    const s = reader.spread, pg = reader.pages;
+    if (s >= pg.length / 2 - 1) return;
+    reader.animating = true;
+    leaf.style.left = '50%'; leaf.style.transformOrigin = 'left center';
+    leafFront.className = 'face front right-face';
+    leafBack.className  = 'face back left-face';
+    leafFront.innerHTML = pageHTML(pg[2 * s + 1]);  // current right page
+    leafBack.innerHTML  = pageHTML(pg[2 * s + 2]);  // next left page
+    pageR.innerHTML     = pageHTML(pg[2 * s + 3]);  // next right page, revealed underneath
+    leaf.style.transition = 'none';
+    leaf.style.transform  = 'rotateY(0deg)';
+    leaf.style.display    = 'block';
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      leaf.style.transition = 'transform .72s cubic-bezier(.4,.05,.25,1)';
+      leaf.style.transform  = 'rotateY(-180deg)';
+    }));
+    onLeafDone(() => { reader.spread = s + 1; renderSpread(); });
+  }
+
+  /* click left page -> flip backward (disabled on the first spread) */
+  function flipPrev(){
+    if (!reader.open || reader.animating) return;
+    const s = reader.spread, pg = reader.pages;
+    if (s <= 0) return;
+    reader.animating = true;
+    leaf.style.left = '0'; leaf.style.transformOrigin = 'right center';
+    leafFront.className = 'face front left-face';
+    leafBack.className  = 'face back right-face';
+    leafFront.innerHTML = pageHTML(pg[2 * s]);      // current left page
+    leafBack.innerHTML  = pageHTML(pg[2 * s - 1]);  // previous right page
+    pageL.innerHTML     = pageHTML(pg[2 * s - 2]);  // previous left page, revealed underneath
+    leaf.style.transition = 'none';
+    leaf.style.transform  = 'rotateY(0deg)';
+    leaf.style.display    = 'block';
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      leaf.style.transition = 'transform .72s cubic-bezier(.4,.05,.25,1)';
+      leaf.style.transform  = 'rotateY(180deg)';
+    }));
+    onLeafDone(() => { reader.spread = s - 1; renderSpread(); });
+  }
+
+  pageL.addEventListener('click', e => { e.stopPropagation(); flipPrev(); });
+  pageR.addEventListener('click', e => { e.stopPropagation(); flipNext(); });
+  leaf.addEventListener('click', e => e.stopPropagation());
+  $('reader-backdrop').addEventListener('click', closeReader);
+
+  /* ================= Init ================= */
+  layout();
+})();
+</script>
+
+<script>
+/* 嵌入幻灯片：将 PgUp/PgDn/空格/Home/End 转发给父页用于翻页；
+   方向键留给 demo 自身交互，不转发 */
+(function(){
+  if (window.parent === window) return;
+  var KEYS = {PageUp:1, PageDown:1, ' ':1, Home:1, End:1};
+  window.addEventListener('keydown', function(e){
+    if (!KEYS[e.key]) return;
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    try {
+      window.parent.dispatchEvent(new window.parent.KeyboardEvent('keydown', {key: e.key}));
+      e.preventDefault();
+    } catch(err){}
+  }, true);
+})();
+</script>
+</body>
+</html>

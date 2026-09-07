@@ -1,0 +1,978 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<title>Oven · 产品发布会</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Stardos+Stencil:wght@400;700&family=Barlow+Condensed:wght@500;600;700;800;900&family=Inter:wght@400;500;600&family=Noto+Serif+SC:wght@400;500;700;900&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet" />
+<script src="deck-stage.js"></script>
+<style>
+  :root {
+    --bone:    #E2DCC9;
+    --black:   #000000;
+    --ink:     #0A0A0A;
+    --paper:   #F4EFE0;
+    --sienna:  #A06A3C;
+    --magenta: #C73B7A;
+    --orange:  #EE7A2E;
+    --teal:    #2D7E73;
+    --blue:    #3F73B7;
+    --mustard: #D8A93B;
+    --olive:   #6F7A2E;
+  }
+  html, body { margin:0; padding:0; background:#1a1a1a; }
+  body { font-family: "Noto Serif SC", "Inter", "Helvetica Neue", Arial, sans-serif; color: var(--ink); }
+  deck-stage { background: #1a1a1a; }
+
+  section.slide { background: var(--bone); color: var(--ink); overflow: hidden; position: relative; }
+  section.slide.dark { background: var(--black); color: var(--bone); }
+
+  .top {
+    position: absolute; top: 48px; left: 64px; right: 64px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-family: "Noto Sans SC", "Barlow Condensed", "Helvetica Neue", sans-serif;
+    font-weight: 800;
+    font-size: 28px;
+    letter-spacing: 0;
+    line-height: 1;
+  }
+  .top .meta {
+    display: flex; gap: 48px;
+    font-family: "Barlow Condensed", "Noto Sans SC", sans-serif;
+    font-size: 22px; font-weight: 600; letter-spacing: .06em;
+    text-transform: uppercase; opacity: .85;
+  }
+  section.slide.dark .top { color: var(--bone); }
+
+  .footer {
+    position: absolute; left: 64px; right: 64px; bottom: 36px;
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: "Barlow Condensed", "Noto Sans SC", sans-serif;
+    font-weight: 600; font-size: 20px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    opacity: .75;
+  }
+  section.slide.dark .footer { color: var(--bone); }
+
+  .mono {
+    font-family: "SF Mono", Consolas, Menlo, monospace;
+    background: rgba(10,10,10,.08);
+    border-radius: 8px;
+    padding: .15em .45em;
+    font-size: .92em;
+  }
+
+  /* =========== 01 COVER =========== */
+  .s-cover { padding: 0; }
+  .s-cover .stage {
+    position: absolute; inset: 0;
+    display: grid;
+    grid-template-rows: 1fr auto;
+    padding: 48px 64px;
+  }
+  .s-cover .super {
+    font-family: "Barlow Condensed", "Noto Sans SC", sans-serif;
+    font-weight: 800; font-size: 28px; letter-spacing: .12em;
+    text-transform: uppercase; opacity: .8;
+  }
+  .s-cover .super .zh {
+    font-family: "Noto Sans SC", sans-serif;
+    letter-spacing: 0; margin-left: .6em;
+  }
+  .s-cover h1 {
+    font-family: "Stardos Stencil", serif;
+    font-weight: 700;
+    font-size: 220px;
+    line-height: .82;
+    letter-spacing: -.015em;
+    text-transform: uppercase;
+    color: var(--ink);
+    align-self: end;
+    margin: 0;
+  }
+  .s-cover h1 em { font-style: normal; color: var(--magenta); }
+  .s-cover .tagline {
+    font-family: "Noto Serif SC", serif;
+    font-weight: 900;
+    font-size: 42px;
+    line-height: 1.2;
+    margin-top: 18px;
+    color: var(--ink);
+  }
+  .s-cover .lead {
+    font-family: "Noto Serif SC", "Inter", sans-serif;
+    font-size: 36px;
+    line-height: 1.75;
+    margin-top: 16px;
+    max-width: 28em;
+    opacity: .85;
+  }
+  .s-cover .row {
+    display: flex; align-items: end; justify-content: space-between;
+    margin-top: 28px;
+  }
+  .s-cover .row .lockup { display: flex; align-items: center; gap: 18px; }
+  .s-cover .row .mark {
+    width: 56px; height: 56px; border-radius: 14px; background: var(--orange);
+  }
+  .s-cover .row .who {
+    font-family: "Barlow Condensed", "Noto Sans SC", sans-serif; font-weight: 700;
+    font-size: 28px; text-transform: uppercase; letter-spacing: .04em;
+  }
+  .s-cover .row .who small {
+    display: block; font-family: "Noto Sans SC", sans-serif;
+    font-size: 18px; font-weight: 500; letter-spacing: 0; opacity: .65;
+    text-transform: none; margin-top: 4px;
+  }
+  .s-cover .row .date {
+    font-family: "Stardos Stencil", serif; font-weight: 700;
+    font-size: 36px; text-transform: uppercase;
+  }
+  .s-cover .shape {
+    position: absolute; right: 56px; top: 64px;
+    width: 320px; height: 380px;
+    color: var(--teal);
+  }
+  .s-cover .promo {
+    position: absolute; right: 300px; top: 50%;
+    transform: translateY(-50%);
+    height: 840px;
+    border-radius: 28px;
+    box-shadow: 0 28px 64px rgba(10,10,10,.22);
+    z-index: 2;
+  }
+
+  /* =========== 02 WHY NOW =========== */
+  .s-why .head {
+    position: absolute; left: 64px; right: 64px; top: 130px;
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 40px;
+  }
+  .s-why .head h2 {
+    font-family: "Noto Serif SC", "Stardos Stencil", serif;
+    font-weight: 900;
+    font-size: 72px; line-height: 1.15;
+  }
+  .s-why .head .sub {
+    font-family: "Noto Sans SC", "Barlow Condensed", sans-serif;
+    font-weight: 600;
+    font-size: 22px;
+    max-width: 28ch; line-height: 1.6; opacity: .8; margin-top: 12px;
+  }
+  .s-why .cards {
+    position: absolute; left: 64px; right: 64px; top: 300px; bottom: 300px;
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
+  }
+  .s-why .card {
+    border-radius: 26px; padding: 28px 26px;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .s-why .card.c1 { background: var(--blue); color: var(--bone); }
+  .s-why .card.c2 { background: var(--teal); color: var(--bone); }
+  .s-why .card.c3 { background: var(--magenta); color: var(--ink); }
+  .s-why .card .n {
+    font-family: "Stardos Stencil", serif; font-weight: 700;
+    font-size: 64px; line-height: .9;
+  }
+  .s-why .card h3 {
+    font-family: "Noto Serif SC", serif; font-weight: 900;
+    font-size: 28px; line-height: 1.15;
+  }
+  .s-why .card p {
+    font-family: "Noto Serif SC", "Inter", sans-serif;
+    font-size: 20px; line-height: 1.55; opacity: .92;
+  }
+  .s-why .versus {
+    position: absolute; left: 64px; right: 64px; bottom: 140px; height: 130px;
+    display: grid; grid-template-columns: 1fr auto 1fr; gap: 22px; align-items: stretch;
+  }
+  .s-why .vs-cell {
+    border-radius: 22px; padding: 22px 28px;
+    display: flex; flex-direction: column; justify-content: center; gap: 6px;
+  }
+  .s-why .vs-cell.a { background: var(--teal); color: var(--bone); }
+  .s-why .vs-cell.b { background: var(--magenta); color: var(--ink); }
+  .s-why .vs-cell .t {
+    font-family: "Noto Sans SC", "Barlow Condensed", sans-serif;
+    font-weight: 700; font-size: 18px; opacity: .85;
+  }
+  .s-why .vs-cell .v {
+    font-family: "Noto Serif SC", "Stardos Stencil", serif;
+    font-weight: 900; font-size: 56px; line-height: 1;
+  }
+  .s-why .vs-mark {
+    font-family: "Stardos Stencil", serif; font-weight: 700;
+    font-size: 42px; display: flex; align-items: center; justify-content: center;
+    color: var(--ink);
+  }
+  .s-why .gap-note {
+    position: absolute; left: 64px; right: 64px; bottom: 90px;
+    font-family: "Noto Serif SC", serif; font-size: 20px; line-height: 1.5; opacity: .8;
+    text-align: center;
+  }
+
+  /* =========== 03 PRINCIPLES =========== */
+  .s-princ { padding: 0; }
+  .s-princ .row {
+    position: absolute;
+    left: 64px; right: 64px; top: 140px; bottom: 80px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+  }
+  .s-princ .card { border-radius: 26px; padding: 32px 26px 28px; display: flex; flex-direction: column; min-height: 0; }
+  .s-princ .card.c1 { background: var(--sienna); }
+  .s-princ .card.c2 { background: var(--magenta); }
+  .s-princ .card.c3 { background: var(--orange); }
+  .s-princ .card.c4 { background: var(--teal); }
+  .s-princ .card .n {
+    font-family: "Stardos Stencil", serif; font-weight: 700;
+    font-size: 160px; line-height: .85; letter-spacing: -.02em;
+    color: var(--ink);
+  }
+  .s-princ .card h3 {
+    font-family: "Noto Serif SC", serif; font-weight: 900;
+    font-size: 28px; line-height: 1.2;
+    margin: auto 0 14px; color: var(--ink);
+  }
+  .s-princ .card p {
+    font-family: "Noto Serif SC", "Inter", sans-serif;
+    font-size: 18px; line-height: 1.55; color: var(--ink);
+  }
+  .s-princ .card.c4 .n,
+  .s-princ .card.c4 h3,
+  .s-princ .card.c4 p { color: var(--bone); }
+
+  /* =========== 04 FEATURES (process 5-up) =========== */
+  .s-process .head {
+    position: absolute; left: 64px; right: 64px; top: 130px;
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 40px;
+  }
+  .s-process .head h2 {
+    font-family: "Noto Serif SC", "Stardos Stencil", serif;
+    font-weight: 900;
+    font-size: 72px; line-height: 1.15;
+  }
+  .s-process .head .sub {
+    font-family: "Noto Sans SC", "Barlow Condensed", sans-serif;
+    font-weight: 600;
+    font-size: 22px;
+    max-width: 28ch; line-height: 1.55; opacity: .8; margin-top: 12px;
+  }
+  .s-process .flow {
+    position: absolute; left: 64px; right: 64px; top: 340px; bottom: 110px;
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 18px;
+  }
+  .s-process .node {
+    border-radius: 22px; padding: 22px 18px 20px;
+    display: flex; flex-direction: column; gap: 8px; position: relative;
+  }
+  .s-process .node.n1 { background: var(--sienna); color: var(--ink); }
+  .s-process .node.n2 { background: var(--magenta); color: var(--ink); }
+  .s-process .node.n3 { background: var(--orange); color: var(--ink); }
+  .s-process .node.n4 { background: var(--teal); color: var(--bone); }
+  .s-process .node.n5 { background: var(--blue); color: var(--bone); }
+  .s-process .node .n {
+    font-family: "Stardos Stencil", serif; font-weight: 700;
+    font-size: 56px; line-height: .9;
+  }
+  .s-process .node h3 {
+    font-family: "Noto Serif SC", serif; font-weight: 900;
+    font-size: 24px; line-height: 1.2;
+  }
+  .s-process .node p {
+    font-family: "Noto Serif SC", "Inter", sans-serif;
+    font-size: 16px; line-height: 1.5;
+  }
+  .s-process .node .arr {
+    position: absolute; right: -14px; top: 36%;
+    width: 28px; height: 28px; z-index: 2;
+  }
+  .s-process .node.n5 .arr { display: none; }
+
+  /* =========== 05 DEMO =========== */
+  .s-demo .head {
+    position: absolute; left: 64px; right: 64px; top: 130px;
+  }
+  .s-demo .head h2 {
+    font-family: "Noto Serif SC", serif; font-weight: 900;
+    font-size: 64px; line-height: 1.15;
+  }
+  .s-demo .grid {
+    position: absolute; left: 64px; right: 64px; top: 300px; bottom: 160px;
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px;
+  }
+  .s-demo .card {
+    border-radius: 26px; padding: 28px 22px;
+    display: flex; flex-direction: column;
+  }
+  .s-demo .card.d1 { background: var(--olive); color: var(--ink); }
+  .s-demo .card.d2 { background: var(--teal); color: var(--bone); }
+  .s-demo .card.d3 { background: var(--orange); color: var(--ink); }
+  .s-demo .card.d4 { background: var(--blue); color: var(--bone); }
+  .s-demo .card.d5 { background: var(--magenta); color: var(--ink); }
+  .s-demo .card .n {
+    font-family: "Stardos Stencil", serif; font-weight: 700;
+    font-size: 72px; line-height: .9; margin-bottom: 18px;
+  }
+  .s-demo .card h3 {
+    font-family: "Noto Serif SC", serif; font-weight: 900;
+    font-size: 26px; line-height: 1.2; margin-top: auto; margin-bottom: 12px;
+  }
+  .s-demo .card p {
+    font-family: "Noto Serif SC", "Inter", sans-serif;
+    font-size: 18px; line-height: 1.5;
+  }
+  .s-demo .note {
+    position: absolute; left: 64px; right: 64px; bottom: 100px;
+    font-family: "Noto Serif SC", serif; font-weight: 700;
+    font-size: 26px; text-align: center;
+  }
+
+  /* =========== DEMO SUB-PAGES =========== */
+  .s-demopage .frame {
+    position: absolute; left: 0; right: 0; top: 104px; bottom: 0;
+    width: 100%; height: calc(100% - 104px);
+    border: 0; background: #fff;
+  }
+
+  /* =========== 06 ARCHITECTURE =========== */
+  .s-arch .stack {
+    position: absolute; left: 64px; right: 64px; top: 130px; bottom: 90px;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .s-arch .tier {
+    flex: 1; border-radius: 22px; padding: 16px 22px;
+    display: flex; flex-direction: column; gap: 10px; min-height: 0;
+  }
+  .s-arch .tier.t1 { background: var(--paper); }
+  .s-arch .tier.t2 { background: var(--mustard); }
+  .s-arch .tier.t3 { background: var(--paper); }
+  .s-arch .tier.t4 { background: var(--sienna); color: var(--ink); }
+  .s-arch .tier .tlabel {
+    font-family: "Barlow Condensed", "Noto Sans SC", sans-serif;
+    font-weight: 800; font-size: 18px; letter-spacing: .08em;
+    text-transform: uppercase; opacity: .75;
+  }
+  .s-arch .tier .tlabel .zh {
+    font-family: "Noto Sans SC", sans-serif;
+    letter-spacing: 0; text-transform: none; margin-left: .5em;
+  }
+  .s-arch .trow { display: flex; gap: 14px; flex: 1; min-height: 0; }
+  .s-arch .node {
+    flex: 1; border-radius: 18px; padding: 12px 16px;
+    display: flex; flex-direction: column; justify-content: center; gap: 4px;
+    background: rgba(255,255,255,.45);
+  }
+  .s-arch .node.cool { background: var(--teal); color: var(--bone); }
+  .s-arch .node.warm { background: var(--orange); color: var(--ink); }
+  .s-arch .node.hot { background: var(--magenta); color: var(--ink); }
+  .s-arch .node.blue { background: var(--blue); color: var(--bone); }
+  .s-arch .node.olive { background: var(--olive); color: var(--ink); }
+  .s-arch .node h4 {
+    font-family: "Noto Serif SC", serif; font-weight: 900;
+    font-size: 20px; line-height: 1.2;
+  }
+  .s-arch .node p {
+    font-family: "Noto Serif SC", "Inter", sans-serif;
+    font-size: 15px; line-height: 1.4; opacity: .9;
+  }
+  .s-arch .arr {
+    font-family: "Barlow Condensed", "Noto Sans SC", sans-serif;
+    font-weight: 700; font-size: 16px; letter-spacing: .06em;
+    text-align: center; opacity: .7; flex: 0 0 auto; line-height: 1;
+  }
+
+  /* =========== 07 RUNTIME (consult) =========== */
+  .s-consult .head {
+    position: absolute; left: 64px; right: 64px; top: 120px;
+    background: var(--mustard);
+    border-radius: 22px;
+    padding: 20px 28px;
+    display: flex; align-items: center; gap: 24px;
+  }
+  .s-consult .head .tag {
+    font-family: "Barlow Condensed", "Noto Sans SC", sans-serif;
+    font-weight: 800;
+    font-size: 22px; letter-spacing: .1em; text-transform: uppercase;
+    flex-shrink: 0; padding-right: 24px;
+    border-right: 2px solid var(--ink);
+  }
+  .s-consult .head .tag .zh {
+    font-family: "Noto Sans SC", sans-serif;
+    letter-spacing: 0; text-transform: none; margin-left: .4em;
+  }
+  .s-consult .head h2 {
+    font-family: "Noto Serif SC", serif; font-weight: 900;
+    font-size: 26px; line-height: 1.3;
+  }
+  .s-consult .grid {
+    position: absolute; left: 64px; right: 64px; top: 250px; bottom: 80px;
+    display: grid;
+    grid-template-columns: 1.25fr 1fr 1fr;
+    gap: 22px;
+  }
+  .s-consult .col {
+    border-radius: 22px; padding: 24px 24px;
+    display: flex; flex-direction: column; gap: 12px; min-height: 0;
+  }
+  .s-consult .col.a { background: var(--paper); }
+  .s-consult .col.b { background: var(--orange); }
+  .s-consult .col.c { background: var(--magenta); color: var(--ink); }
+  .s-consult .col h3 {
+    font-family: "Noto Serif SC", serif; font-weight: 900;
+    font-size: 26px;
+    border-bottom: 2px solid var(--ink); padding-bottom: 10px;
+  }
+  .s-consult .mini {
+    border-radius: 14px; padding: 12px 14px;
+    background: rgba(255,255,255,.5);
+  }
+  .s-consult .mini .mt {
+    font-family: "Noto Serif SC", serif; font-weight: 900;
+    font-size: 18px; margin-bottom: 6px;
+  }
+  .s-consult .mini p,
+  .s-consult .col p {
+    font-family: "Noto Serif SC", "Inter", sans-serif;
+    font-size: 15px; line-height: 1.5;
+  }
+  .s-consult .rtitem {
+    display: grid; grid-template-columns: 110px 1fr; gap: 8px;
+    padding: 8px 0; border-bottom: 1px dashed rgba(10,10,10,.3);
+  }
+  .s-consult .rtitem:last-child { border-bottom: none; }
+  .s-consult .rtitem .k {
+    font-family: "Noto Sans SC", sans-serif; font-weight: 800; font-size: 15px;
+  }
+  .s-consult .rtitem .v {
+    font-family: "Noto Serif SC", "Inter", sans-serif;
+    font-size: 15px; line-height: 1.45;
+  }
+  .s-consult .src {
+    margin-top: auto;
+    font-family: "Noto Sans SC", "Barlow Condensed", sans-serif;
+    font-weight: 700; font-size: 15px;
+    border-top: 1px dashed rgba(10,10,10,.35); padding-top: 10px; opacity: .8;
+  }
+
+  /* =========== 08 MATRIX =========== */
+  .s-matrix .head {
+    position: absolute; left: 64px; right: 64px; top: 120px;
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 40px;
+  }
+  .s-matrix .head h2 {
+    font-family: "Noto Serif SC", serif; font-weight: 900;
+    font-size: 56px; line-height: 1.15;
+  }
+  .s-matrix .head .sub {
+    font-family: "Noto Serif SC", serif; font-weight: 700;
+    font-size: 22px; max-width: 28ch; line-height: 1.45; margin-top: 8px;
+  }
+  .s-matrix .head .sub .strike {
+    text-decoration: line-through; opacity: .55;
+  }
+  .s-matrix .head .sub .accent { color: var(--orange); }
+  .s-matrix .table {
+    position: absolute; left: 64px; right: 64px; top: 280px; bottom: 90px;
+    background: var(--paper); border-radius: 22px;
+    display: grid; grid-template-columns: .7fr 1.4fr 1.4fr;
+    grid-auto-rows: 1fr; overflow: hidden;
+  }
+  .s-matrix .cell {
+    padding: 10px 18px; display: flex; align-items: center;
+    font-family: "Noto Serif SC", "Inter", sans-serif;
+    font-size: 16px; line-height: 1.4;
+    border-bottom: 1.5px solid rgba(10,10,10,.35);
+    border-right: 1.5px solid rgba(10,10,10,.35);
+  }
+  .s-matrix .cell:nth-child(3n) { border-right: 0; }
+  .s-matrix .cell.last { border-bottom: 0; }
+  .s-matrix .cell.head-row {
+    background: var(--ink); color: var(--bone);
+    font-family: "Noto Serif SC", "Stardos Stencil", serif; font-weight: 900;
+    font-size: 20px;
+  }
+  .s-matrix .cell.row-label {
+    font-family: "Noto Serif SC", serif; font-weight: 900;
+    font-size: 18px;
+  }
+  .s-matrix .cell.dim { opacity: .7; }
+  .s-matrix .cell.win {
+    font-weight: 700;
+    background: rgba(45,126,115,.12);
+  }
+  .s-matrix .pill {
+    display: inline-block; border-radius: 999px;
+    padding: 4px 12px; font-weight: 700;
+    font-family: "Noto Sans SC", "Barlow Condensed", sans-serif;
+    font-size: 14px; white-space: nowrap;
+  }
+  .s-matrix .pill.yes  { background: var(--teal); color: var(--bone); }
+  .s-matrix .pill.no   { background: var(--magenta); color: var(--bone); }
+
+  /* =========== 09 CTA / VISION =========== */
+  .s-cta { padding: 0; }
+  .s-cta .stage {
+    position: absolute; inset: 0;
+    padding: 130px 64px 100px;
+    display: grid; grid-template-columns: 1.15fr 1fr; gap: 28px;
+  }
+  .s-cta .pane {
+    border-radius: 26px; padding: 40px;
+    display: flex; flex-direction: column; gap: 20px;
+    position: relative;
+  }
+  .s-cta .mascot {
+    position: absolute; right: 56px; top: 50%;
+    transform: translateY(-50%);
+    width: 470px;
+    filter: drop-shadow(0 20px 32px rgba(0,0,0,.28));
+  }
+  .s-cta .pane.l { background: var(--teal); color: var(--bone); justify-content: space-between; }
+  .s-cta .pane.r { background: var(--orange); color: var(--ink); }
+  .s-cta .pane.l .eyebrow {
+    font-family: "Barlow Condensed", "Noto Sans SC", sans-serif;
+    font-weight: 800; font-size: 22px; letter-spacing: .1em;
+    text-transform: uppercase; opacity: .8;
+  }
+  .s-cta .pane.l .eyebrow .zh {
+    font-family: "Noto Sans SC", sans-serif;
+    letter-spacing: 0; text-transform: none; margin-left: .4em;
+  }
+  .s-cta .pane.l h2 {
+    font-family: "Noto Serif SC", serif; font-weight: 900;
+    font-size: 72px; line-height: 1.15;
+  }
+  .s-cta .pane.l h2 em { font-style: normal; color: var(--orange); }
+  .s-cta .pane.l p {
+    font-family: "Noto Serif SC", "Inter", sans-serif;
+    font-size: 22px; line-height: 1.65; opacity: .92; max-width: 28ch;
+  }
+  .s-cta .pane.r h3 {
+    font-family: "Noto Serif SC", serif; font-weight: 900;
+    font-size: 32px; line-height: 1.25;
+  }
+  .s-cta .pane.r .step { display: grid; grid-template-columns: 56px 1fr; gap: 14px; align-items: start; }
+  .s-cta .pane.r .step .n {
+    font-family: "Stardos Stencil", serif; font-weight: 700;
+    font-size: 48px; line-height: .9;
+  }
+  .s-cta .pane.r .step h4 {
+    font-family: "Noto Sans SC", sans-serif; font-weight: 800;
+    font-size: 22px; margin-bottom: 4px;
+  }
+  .s-cta .pane.r .step p {
+    font-family: "Noto Serif SC", "Inter", sans-serif;
+    font-size: 18px; line-height: 1.5;
+  }
+  .s-cta .pane.r .closer {
+    margin-top: auto;
+    font-family: "Noto Serif SC", serif; font-weight: 900;
+    font-size: 28px; line-height: 1.35;
+  }
+  .s-cta .pane.r .closer .accent { color: var(--magenta); }
+</style>
+</head>
+<body>
+
+<deck-stage>
+
+  <!-- ============ 01 COVER ============ -->
+  <section class="slide s-cover" data-label="01 产品亮相" data-om-validate="false">
+    <div class="stage">
+      <div>
+        <div class="super">Product Launch<span class="zh">· 产品亮相</span></div>
+      </div>
+      <div>
+        <h1>Oven</h1>
+        <div class="tagline">自适应 Web 数据接入工具</div>
+        <div class="lead">网页部署的又一个「OpenClaw 时刻」<br>让网页自己接通数据</div>
+        <div class="row">
+          <div class="lockup">
+            <div class="mark"></div>
+            <div class="who">Oven
+              <small>产品开放麦</small>
+            </div>
+          </div>
+          <div class="date">2026</div>
+        </div>
+      </div>
+    </div>
+    <svg class="shape" viewBox="0 0 100 120" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M50 0 C 80 0, 100 20, 100 40 C 100 60, 80 60, 50 60 C 20 60, 0 60, 0 80 C 0 100, 20 120, 50 120 C 80 120, 100 100, 100 80" fill="currentColor"/>
+    </svg>
+    <img class="promo" src="promo-ui.png" alt="Oven 五分钟快速接入 · 用户界面宣传图" />
+  </section>
+
+  <!-- ============ 02 WHY NOW ============ -->
+  <section class="slide s-why" data-label="02 行业洞察" data-om-validate="false">
+    <div class="top">
+      <span>Why Now · 行业洞察与痛点</span>
+      <span class="meta"><span>Oven</span><span>02 / 09</span></span>
+    </div>
+    <div class="head">
+      <h2>Vibe Coding 时代</h2>
+      <div class="sub">人人都能根据业务创意搭建网页</div>
+    </div>
+    <div class="cards">
+      <div class="card c1">
+        <div class="n">01</div>
+        <h3>B 端业务侧团队</h3>
+        <p>最懂业务的人亲手搭建业务页面，不等产研排期</p>
+      </div>
+      <div class="card c2">
+        <div class="n">02</div>
+        <h3>OPC</h3>
+        <p>一人公司 / 超级个体，一个人就是一支产品团队</p>
+      </div>
+      <div class="card c3">
+        <div class="n">03</div>
+        <h3>个人开发者</h3>
+        <p>用 AI 快速验证创意，把想法做成能跑的产品</p>
+      </div>
+    </div>
+    <div class="versus">
+      <div class="vs-cell a">
+        <div class="t">网页生成</div>
+        <div class="v">5 分钟</div>
+      </div>
+      <div class="vs-mark">VS</div>
+      <div class="vs-cell b">
+        <div class="t">后端接口排期开发</div>
+        <div class="v">2 周</div>
+      </div>
+    </div>
+    <div class="gap-note">创意到生产环境之间，隔着一条「接口排期」的鸿沟。</div>
+    <div class="footer"><span>Oven · Product Launch</span><span>02 / 09</span></div>
+  </section>
+
+  <!-- ============ 03 PRINCIPLES ============ -->
+  <section class="slide s-princ" data-label="03 设计理念" data-om-validate="false">
+    <div class="top">
+      <span>Design Philosophy · 四条设计哲学</span>
+      <span class="meta"><span>Oven</span><span>03 / 09</span></span>
+    </div>
+    <div class="row">
+      <div class="card c1">
+        <div class="n">1</div>
+        <h3>页面即需求</h3>
+        <p>outerHTML 就是需求文档——不需要 PRD、不需要接口文档，Agent 读页面就知道要什么数据</p>
+      </div>
+      <div class="card c2">
+        <div class="n">2</div>
+        <h3>学一次，跑千次</h3>
+        <p>慢链路学习一次即固化缓存，快链路复用计划毫秒响应，LLM 成本趋近于零</p>
+      </div>
+      <div class="card c3">
+        <div class="n">3</div>
+        <h3>零侵入</h3>
+        <p>不动一行渲染代码，一行 <span class="mono">&lt;script&gt;</span> 接入，老页面原地升级</p>
+      </div>
+      <div class="card c4">
+        <div class="n">4</div>
+        <h3>不信任，必验证</h3>
+        <p>每个 Agent 产物都要过监管者质检 + 四层护栏，智能绝不以失控为代价</p>
+      </div>
+    </div>
+    <div class="footer"><span>Oven · Product Launch</span><span>03 / 09</span></div>
+  </section>
+
+  <!-- ============ 04 KEY FEATURES ============ -->
+  <section class="slide s-process" data-label="04 核心功能" data-om-validate="false">
+    <div class="top">
+      <span>Key Features · 核心功能详解</span>
+      <span class="meta"><span>Oven</span><span>04 / 09</span></span>
+    </div>
+    <div class="head">
+      <h2>五大核心能力</h2>
+      <div class="sub">从接入到执行，覆盖页面理解、多 Agent 协同与双链路刷新</div>
+    </div>
+    <div class="flow">
+      <div class="node n1">
+        <div class="n">1</div>
+        <h3>一行代码接入</h3>
+        <p>sdk.refresh(outerHTML) 一个 API 完成全部接入——前端改造从「人天」变「分钟」，渲染层零改动</p>
+        <svg class="arr" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="3"><path d="M6 16 H26 M20 9 L26 16 L20 23"/></svg>
+      </div>
+      <div class="node n2">
+        <div class="n">2</div>
+        <h3>页面自理解</h3>
+        <p>需求分析 Agent 读页面快照自动产字段映射——页面长什么样，数据就配成什么样</p>
+        <svg class="arr" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="3"><path d="M6 16 H26 M20 9 L26 16 L20 23"/></svg>
+      </div>
+      <div class="node n3">
+        <div class="n">3</div>
+        <h3>多 Agent 有向协同</h3>
+        <p>监管者统筹质检，分析 Agent 上游纯分析、执行 Agent 下游自动选 Tool——每步可核验、可回退</p>
+        <svg class="arr" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="3"><path d="M6 16 H26 M20 9 L26 16 L20 23"/></svg>
+      </div>
+      <div class="node n4">
+        <div class="n">4</div>
+        <h3>双 MCP 万能数据插头</h3>
+        <p>MCP-A 接外部 API，MCP-B 通吃结构化 + 非结构化数据库——新增数据源，Agent 零改动</p>
+        <svg class="arr" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="3"><path d="M6 16 H26 M20 9 L26 16 L20 23"/></svg>
+      </div>
+      <div class="node n5">
+        <div class="n">5</div>
+        <h3>快慢双链路</h3>
+        <p>学习走慢链路（LLM），执行走快链路（缓存计划直调）——日常刷新毫秒级，无 LLM 推理开销</p>
+      </div>
+    </div>
+    <div class="footer"><span>Oven · Product Launch</span><span>04 / 09</span></div>
+  </section>
+
+  <!-- ============ 05 LIVE DEMO ============ -->
+  <section class="slide s-demo" data-label="05 Live Demo" data-om-validate="false">
+    <div class="top">
+      <span>Live Demo · 现场演示</span>
+      <span class="meta"><span>Oven</span><span>05 / 09</span></span>
+    </div>
+    <div class="head">
+      <h2>五个真实场景，覆盖全数据源类型</h2>
+    </div>
+    <div class="grid">
+      <div class="card d1">
+        <div class="n">01</div>
+        <h3>线上图书馆</h3>
+        <p>MongoDB<br>非结构化文档接入</p>
+      </div>
+      <div class="card d2">
+        <div class="n">02</div>
+        <h3>诗云</h3>
+        <p>MongoDB<br>内容型长文本页面</p>
+      </div>
+      <div class="card d3">
+        <div class="n">03</div>
+        <h3>烧杯</h3>
+        <p>PubChem<br>外部开放 API · MCP-A</p>
+      </div>
+      <div class="card d4">
+        <div class="n">04</div>
+        <h3>企业 CRM</h3>
+        <p>MySQL<br>结构化数据库 · MCP-B</p>
+      </div>
+      <div class="card d5">
+        <div class="n">05</div>
+        <h3>HR 管理平台</h3>
+        <p>Workday<br>企业级 SaaS API</p>
+      </div>
+    </div>
+    <div class="note">一次刷新，页面自己接通五类数据源。</div>
+    <div class="footer"><span>Oven · Product Launch</span><span>05 / 09</span></div>
+  </section>
+
+  <section class="slide s-demopage" data-label="Demo 01 线上图书馆" data-om-validate="false">
+    <div class="top">
+      <span>Live Demo · 01 线上图书馆</span>
+      <span class="meta"><span>Oven</span><span>MongoDB · 非结构化文档接入</span></span>
+    </div>
+    <iframe class="frame" src="demos/library.html" title="线上图书馆 Demo" loading="eager"></iframe>
+  </section>
+
+  <section class="slide s-demopage" data-label="Demo 02 诗云" data-om-validate="false">
+    <div class="top">
+      <span>Live Demo · 02 诗云</span>
+      <span class="meta"><span>Oven</span><span>MongoDB · 内容型长文本页面</span></span>
+    </div>
+    <iframe class="frame" src="demos/shiyun/shiyun.html" title="诗云 Demo" loading="eager"></iframe>
+  </section>
+
+  <section class="slide s-demopage" data-label="Demo 03 烧杯" data-om-validate="false">
+    <div class="top">
+      <span>Live Demo · 03 烧杯</span>
+      <span class="meta"><span>Oven</span><span>PubChem · 外部开放 API · MCP-A</span></span>
+    </div>
+    <iframe class="frame" src="demos/shaobei.html" title="烧杯 Demo" loading="eager"></iframe>
+  </section>
+
+  <section class="slide s-demopage" data-label="Demo 04 企业 CRM" data-om-validate="false">
+    <div class="top">
+      <span>Live Demo · 04 企业 CRM</span>
+      <span class="meta"><span>Oven</span><span>MySQL · 结构化数据库 · MCP-B</span></span>
+    </div>
+    <iframe class="frame" src="demos/crm.html" title="企业 CRM Demo" loading="eager"></iframe>
+  </section>
+
+  <section class="slide s-demopage" data-label="Demo 05 HR 管理平台" data-om-validate="false">
+    <div class="top">
+      <span>Live Demo · 05 HR 管理平台</span>
+      <span class="meta"><span>Oven</span><span>Workday · 企业级 SaaS API</span></span>
+    </div>
+    <iframe class="frame" src="demos/hr.html" title="HR 管理平台 Demo" loading="eager"></iframe>
+  </section>
+
+  <!-- ============ 06 ARCHITECTURE ============ -->
+  <section class="slide s-arch" data-label="06 系统架构" data-om-validate="false">
+    <div class="top">
+      <span>Architecture · 系统架构</span>
+      <span class="meta"><span>Oven</span><span>06 / 09</span></span>
+    </div>
+    <div class="stack">
+      <div class="tier t1">
+        <div class="tlabel">Tier 1<span class="zh">· 浏览器</span></div>
+        <div class="trow">
+          <div class="node blue"><h4>前端 HTML 页面</h4><p>触发刷新 · 接收回填 · 渲染零改动</p></div>
+          <div class="node cool"><h4>SDK · AgenticWebData</h4><p>脱敏快照 · 共享内存 · onChange 广播</p></div>
+        </div>
+      </div>
+      <div class="arr">▼ HTTPS · 脱敏 outerHTML</div>
+      <div class="tier t2">
+        <div class="tlabel">Tier 2<span class="zh">· Agent 服务端（多 Agent · 唯一含 LLM）</span></div>
+        <div class="trow">
+          <div class="node hot"><h4>监管者 Agent</h4><p>派发 · 并行编排 · 逐节点质检</p></div>
+          <div class="node hot"><h4>数据需求分析 子 Agent · 纯分析</h4><p>上游：产字段映射，不调工具</p></div>
+          <div class="node warm"><h4>接口调用 子 Agent · 选 Tool</h4><p>含 LLM，经 MCP-A 取数</p></div>
+          <div class="node cool"><h4>数据库操作 子 Agent · 选 Tool</h4><p>含 LLM，经 MCP-B 读写</p></div>
+        </div>
+      </div>
+      <div class="arr">▼ MCP 协议 · tool / resource</div>
+      <div class="tier t3">
+        <div class="tlabel">Tier 3<span class="zh">· 双 MCP 服务端</span></div>
+        <div class="trow">
+          <div class="node warm"><h4>外部系统 MCP 服务端</h4><p>tool：callExternalAPI · resource：API schema</p></div>
+          <div class="node cool"><h4>数据库 MCP 服务端</h4><p>tool：SQL 函数 + search/get/put · resource：表 + 集合 schema</p></div>
+        </div>
+      </div>
+      <div class="arr">▼ REST ｜ SQL / NoSQL</div>
+      <div class="tier t4">
+        <div class="tlabel">Tier 4<span class="zh">· 下游数据源</span></div>
+        <div class="trow">
+          <div class="node warm"><h4>外部系统 API</h4><p>PubChem · Workday · REST/GraphQL</p></div>
+          <div class="node olive"><h4>结构化数据库</h4><p>MySQL / PostgreSQL</p></div>
+          <div class="node cool"><h4>非结构化数据库</h4><p>MongoDB / ES / 对象存储</p></div>
+        </div>
+      </div>
+    </div>
+    <div class="footer"><span>Oven · Product Launch</span><span>06 / 09</span></div>
+  </section>
+
+  <!-- ============ 07 RUNTIME ============ -->
+  <section class="slide s-consult" data-label="07 Runtime" data-om-validate="false">
+    <div class="top">
+      <span>Runtime · 运行机制</span>
+      <span class="meta"><span>Oven</span><span>07 / 09</span></span>
+    </div>
+    <div class="head">
+      <div class="tag">Runtime<span class="zh">· 07</span></div>
+      <h2>双链路数据流 · 五大模块拆解 · 四层安全护栏</h2>
+    </div>
+    <div class="grid">
+      <div class="col a">
+        <h3>双链路数据流</h3>
+        <div class="mini">
+          <div class="mt">慢链路 · 学一次缓存（缓存未命中）</div>
+          <p>① 监管者查缓存 ② 数据需求分析 子 Agent 纯分析产字段映射（不调工具）③ 映射下传，接口调用 / 数据库操作 子 Agent LLM 首次选 Tool 产调用计划 ④ 生成清洗脚本 → 质检 → 沙箱校验 → 人工审核 ⑤「映射 + 计划 + 脚本」固化 Redis</p>
+        </div>
+        <div class="mini">
+          <div class="mt">快链路 · 默认无 LLM 推理（每次刷新）</div>
+          <p>① 缓存命中，并行派发接口调用 / 数据库操作 子 Agent ② 复用缓存计划：MCP-A 取外部数 / MCP-B 读写库 ③ 汇总 → 缓存脚本沙箱清洗 → schema 校验 ④ 监管者终检 → onChange → renderAll 回填</p>
+        </div>
+      </div>
+      <div class="col b">
+        <h3>五大模块拆解</h3>
+        <div class="rtitem"><span class="k">前端 HTML</span><span class="v">引 SDK、触发刷新、交给 renderAll，渲染零改动</span></div>
+        <div class="rtitem"><span class="k">SDK 层</span><span class="v">前后端之桥：共享内存 · 快照脱敏 · 单向广播</span></div>
+        <div class="rtitem"><span class="k">Agent 服务端</span><span class="v">系统大脑：监管者质检 + 子 Agent 有向分工（唯一含 LLM）</span></div>
+        <div class="rtitem"><span class="k">MCP-A</span><span class="v">外部 API 标准化封装，Token 鉴权收敛于内部</span></div>
+        <div class="rtitem"><span class="k">MCP-B</span><span class="v">数据库统一封装：SQL 参数化 + 非结构化操作白名单</span></div>
+      </div>
+      <div class="col c">
+        <h3>四层安全护栏</h3>
+        <div class="rtitem"><span class="k">① 输入脱敏</span><span class="v">SDK 剥离内联脚本，防密钥随快照外泄</span></div>
+        <div class="rtitem"><span class="k">② 脚本沙箱</span><span class="v">LLM 脚本禁网禁 FS，限内存与超时</span></div>
+        <div class="rtitem"><span class="k">③ 输出校验</span><span class="v">ajv schema 校验，不过检拒绝回填</span></div>
+        <div class="rtitem"><span class="k">④ 人工审核</span><span class="v">首次固化前人工过目，恶意脚本不进缓存</span></div>
+        <div class="src">配套：逐层鉴权收敛 · CORS 白名单 · 全链路审计日志 · 刷新防抖节流</div>
+      </div>
+    </div>
+    <div class="footer"><span>Oven · Product Launch</span><span>07 / 09</span></div>
+  </section>
+
+  <!-- ============ 08 COMPARISON ============ -->
+  <section class="slide s-matrix" data-label="08 竞品对比" data-om-validate="false">
+    <div class="top">
+      <span>Comparison · 竞品对比</span>
+      <span class="meta"><span>Oven</span><span>08 / 09</span></span>
+    </div>
+    <div class="head">
+      <h2>若依 RuoYi × Oven</h2>
+      <div class="sub">若依帮你<span class="strike">更快地写</span>后端，Oven 让你<span class="accent">不用写</span>后端</div>
+    </div>
+    <div class="table">
+      <div class="cell head-row">维度</div>
+      <div class="cell head-row">若依 RuoYi</div>
+      <div class="cell head-row">Oven</div>
+
+      <div class="cell row-label">本质</div>
+      <div class="cell dim">代码生成脚手架，生成一套 CRUD 代码</div>
+      <div class="cell win">自适应数据接入工具，一行代码接入</div>
+
+      <div class="cell row-label">后端接口</div>
+      <div class="cell dim">每张表生成三层代码，改字段要改代码重新发版</div>
+      <div class="cell win">无需写接口，Agent 学字段，变更自动感知</div>
+
+      <div class="cell row-label">使用者</div>
+      <div class="cell dim">专业 Java 开发者</div>
+      <div class="cell win">业务团队 / OPC / 个人开发者</div>
+
+      <div class="cell row-label">前端关系</div>
+      <div class="cell dim">生成并接管整套 Vue 前端</div>
+      <div class="cell win">零侵入，复用现有渲染逻辑</div>
+
+      <div class="cell row-label">数据源</div>
+      <div class="cell dim">以关系型数据库为主</div>
+      <div class="cell win">API + MySQL + MongoDB + 企业 SaaS</div>
+
+      <div class="cell row-label">智能化</div>
+      <div class="cell dim">无 LLM，纯模板规则</div>
+      <div class="cell win">多 Agent 协同 + LLM Tool 选择</div>
+
+      <div class="cell row-label last">上线周期</div>
+      <div class="cell last dim">天 / 周级（排期开发）</div>
+      <div class="cell last win">分钟级（刷新即学会）</div>
+    </div>
+    <div class="footer"><span>Oven · Product Launch</span><span>08 / 09</span></div>
+  </section>
+
+  <!-- ============ 09 VISION ============ -->
+  <section class="slide s-cta" data-label="09 落地愿景" data-om-validate="false">
+    <div class="top">
+      <span>Vision · 落地愿景</span>
+      <span class="meta"><span>Oven</span><span>09 / 09</span></span>
+    </div>
+    <div class="stage">
+      <div class="pane l">
+        <div class="eyebrow">From Tool<span class="zh">· 从工具到方案</span></div>
+        <h2>从工具<br>到方案</h2>
+        <img class="mascot" src="mascot.png" alt="Oven 产品形象吉祥物" />
+        <p>面向不同 B 端用户，由 FDE 与售前工程师提供场景化解决方案，把 Oven 送进每一个业务现场。</p>
+      </div>
+      <div class="pane r">
+        <h3>落地方式</h3>
+        <div class="step">
+          <div class="n">1</div>
+          <div>
+            <h4>FDE</h4>
+            <p>深入业务现场，把 Oven 接到真实数据源与真实页面</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="n">2</div>
+          <div>
+            <h4>售前工程师</h4>
+            <p>面向不同 B 端用户，提供场景化解决方案</p>
+          </div>
+        </div>
+        <div class="closer">让每一个被 vibe 出来的网页<br>都能<span class="accent">活着走进生产环境</span></div>
+      </div>
+    </div>
+    <div class="footer"><span>Oven · 自适应 Web 数据接入工具</span><span>09 / 09</span></div>
+  </section>
+
+</deck-stage>
+
+</body>
+</html>

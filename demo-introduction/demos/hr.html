@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>欧洲HR人才分析看板</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<!-- 京东地图 jdmap-gl SDK（UAT 环境 uat-api.jdl.com + com.jd.globe.sdk.uat；如需切生产替换为 proxy.jdwl.com + com.jd.globe.sdk.pro） -->
+<script src="//uat-api.jdl.com/sdk/jdmap-gl.js?LOP-DN=com.jd.globe.sdk.uat&appKey=94dd8a623d3140dd8a4ca2d7f8ae1c7b"></script>
+<link rel="stylesheet" href="//uat-api.jdl.com/sdk/jdmap-gl.css?LOP-DN=com.jd.globe.sdk.uat"/>
+<style>
+:root{
+  --primary:#185DD3;--primary-light:#E8F0FE;--primary-dark:#1248A5;
+  --bg-page:#FFFFFF;--bg-card:#FFFFFF;--bg-panel:#F5F7FA;--bg-section:#EDF1F5;
+  --grey-1:#202D3F;--grey-2:#5A6778;--grey-3:#8C96A5;--grey-4:#D0D5DD;
+  --chart-primary:#185DD3;--chart-secondary:#42A5F5;--chart-tertiary:#00BFA5;--chart-quaternary:#7C4DFF;
+  --status-success:#34C759;--status-danger:#FF3B30;--status-warning:#FF9500;--status-neutral:#8C96A5;
+  --space-xs:4px;--space-sm:8px;--space-md:16px;--space-lg:20px;--space-xl:24px;
+  --radius-sm:6px;--radius-md:8px;--radius-lg:12px;--radius-xl:16px;
+  --shadow-card:0 1px 3px rgba(0,0,0,.04);--shadow-hover:0 4px 12px rgba(0,0,0,.08);
+  --font-family:"Microsoft YaHei","PingFang SC","Hiragino Sans GB","Noto Sans SC",sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg-page);color:var(--grey-1);font-family:var(--font-family);overflow-x:hidden}
+body{min-height:100vh;font-size:14px;line-height:1.5}
+.app{max-width:1680px;margin:0 auto;padding:var(--space-xl);overflow-x:hidden}
+/* Header */
+.app-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-md);flex-wrap:wrap;gap:var(--space-md)}
+.brand{display:flex;align-items:center;gap:12px}
+.brand .logo{width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,#185DD3,#42A5F5);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:16px}
+.brand h1{font-size:28px;font-weight:500;color:var(--grey-1);margin:0;letter-spacing:-.01em}
+.header-actions{display:flex;gap:8px}
+.btn-primary{padding:9px 18px;background:var(--primary);color:#fff;border:none;border-radius:var(--radius-md);font-size:14px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-family:inherit}
+.btn-primary:hover{background:var(--primary-dark);box-shadow:0 2px 8px rgba(24,93,211,.3)}
+.btn-ghost{padding:9px 16px;background:#fff;border:1px solid var(--grey-4);border-radius:var(--radius-md);color:var(--grey-2);font-size:14px;cursor:pointer;font-family:inherit}
+.btn-ghost:hover{border-color:var(--primary);color:var(--primary)}
+/* Filter bar */
+.filter-bar{background:#fff;border:1px solid var(--grey-4);border-radius:var(--radius-lg);padding:12px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:var(--space-lg);box-shadow:var(--shadow-card)}
+.filter-item{display:flex;align-items:center;gap:6px}
+.filter-item label{font-size:13px;color:var(--grey-2);font-weight:500}
+.filter-item select,.filter-item input[type=month]{padding:6px 10px;border:1px solid var(--grey-4);border-radius:var(--radius-md);background:#fff;color:var(--grey-1);font-size:13px;font-family:inherit;cursor:pointer;outline:none}
+.filter-item select:hover,.filter-item input:hover{border-color:var(--primary)}
+.filter-item select:focus,.filter-item input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(24,93,211,.1)}
+/* Section */
+.section{margin-bottom:var(--space-xl)}
+.section-title{display:flex;align-items:center;gap:8px;font-size:18px;font-weight:500;color:var(--grey-1);margin-bottom:var(--space-md);padding-bottom:8px;border-bottom:2px solid var(--bg-section)}
+.section-title .idx{background:var(--primary);color:#fff;width:22px;height:22px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:600}
+.section-title .sub{font-size:12px;color:var(--grey-3);font-weight:400;margin-left:auto}
+/* KPI groups */
+.kpi-groups{display:flex;flex-direction:column;gap:var(--space-lg)}
+.kpi-group-title{font-size:13px;color:var(--grey-2);font-weight:500;margin-bottom:8px}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--space-md)}
+.metric-card{background:#fff;border:1px solid var(--grey-4);border-radius:var(--radius-lg);padding:16px 18px;box-shadow:var(--shadow-card);position:relative;overflow:hidden;cursor:pointer;transition:all .2s ease;min-height:168px;display:flex;flex-direction:column}
+.metric-card.has-chart{min-height:320px}
+.metric-card:hover{box-shadow:var(--shadow-hover);border-color:var(--primary);transform:translateY(-1px)}
+.metric-card::before{content:'';position:absolute;left:0;top:0;right:0;height:3px;background:linear-gradient(90deg,#185DD3,#42A5F5);border-radius:12px 12px 0 0}
+.metric-card .label{font-size:13px;color:var(--grey-3);margin-bottom:4px}
+.metric-card .value{font-size:28px;font-weight:600;color:var(--grey-1);line-height:1.2;display:flex;align-items:baseline;gap:6px}
+.metric-card .value .unit{font-size:12px;color:var(--grey-3);font-weight:400}
+.metric-card .sub{font-size:12px;color:var(--grey-2);margin-top:6px}
+.metric-card .yoy{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:500;padding:2px 6px;border-radius:4px;margin-top:4px;width:fit-content}
+.metric-card .yoy.up{background:rgba(52,199,89,.12);color:var(--status-success)}
+.metric-card .yoy.down{background:rgba(255,59,48,.12);color:var(--status-danger)}
+.metric-card .yoy.flat{background:rgba(140,150,165,.12);color:var(--status-neutral)}
+.health-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:var(--radius-sm);font-size:11px;font-weight:500;margin-top:6px;width:fit-content}
+.health-badge.healthy{background:rgba(52,199,89,.1);color:var(--status-success)}
+.health-badge.warning{background:rgba(255,149,0,.1);color:var(--status-warning)}
+.health-badge.danger{background:rgba(255,59,48,.1);color:var(--status-danger)}
+.chart-wrap{margin-top:10px;border-top:1px dashed var(--bg-section);padding-top:10px;flex:1;display:flex;flex-direction:column}
+.chart-title{font-size:12px;color:var(--grey-2);margin-bottom:6px;font-weight:500}
+.chart-svg{width:100%;flex:1;min-height:110px}
+.chart-legend{display:flex;flex-wrap:wrap;gap:4px 10px;margin-top:6px;font-size:11px;color:var(--grey-2)}
+.legend-item{display:inline-flex;align-items:center;gap:4px}
+.legend-dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex-shrink:0}
+.chart-caption{margin-top:4px;font-size:11px;color:var(--grey-3);line-height:1.4}
+/* Grid for chart rows */
+.chart-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:var(--space-md)}
+.chart-card{background:#fff;border:1px solid var(--grey-4);border-radius:var(--radius-lg);padding:18px;box-shadow:var(--shadow-card);min-height:320px;display:flex;flex-direction:column}
+.chart-card h3{font-size:16px;font-weight:500;margin:0 0 12px;color:var(--grey-1)}
+.chart-card .chart-body{flex:1;min-height:220px;position:relative}
+/* Tab group */
+.tab-group{display:inline-flex;gap:0;background:#fff;border:1px solid var(--grey-4);border-radius:var(--radius-md);padding:3px;flex-wrap:wrap}
+.tab-btn{padding:6px 14px;border-radius:6px;font-size:13px;font-weight:500;border:none;cursor:pointer;background:transparent;color:var(--grey-2);font-family:inherit;transition:all .2s}
+.tab-btn.active{background:var(--primary);color:#fff;box-shadow:0 1px 3px rgba(24,93,211,.3)}
+.tab-btn:not(.active):hover{color:var(--primary);background:var(--primary-light)}
+/* Data table */
+.detail-container{background:#fff;border:1px solid var(--grey-4);border-radius:var(--radius-lg);padding:16px;box-shadow:var(--shadow-card)}
+.detail-toolbar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:12px}
+.detail-toolbar .count{font-size:12px;color:var(--grey-3)}
+.table-scroll{max-height:480px;overflow:auto;border:1px solid var(--bg-section);border-radius:8px}
+.data-table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px;table-layout:auto}
+.data-table thead th{position:sticky;top:0;padding:10px 12px;font-size:12px;font-weight:600;color:var(--grey-2);text-align:left;background:var(--bg-panel);border-bottom:1px solid var(--bg-section);z-index:1;white-space:nowrap}
+.data-table thead th .col-filter{margin-top:6px;width:100%}
+.data-table thead th input,.data-table thead th select{width:100%;padding:4px 6px;font-size:11px;border:1px solid var(--grey-4);border-radius:4px;background:#fff;color:var(--grey-1);font-family:inherit;outline:none}
+.data-table tbody td{padding:10px 12px;color:var(--grey-1);border-bottom:1px solid var(--bg-section);white-space:nowrap}
+.data-table tbody tr:hover{background:var(--bg-panel)}
+.data-table tbody tr:last-child td{border-bottom:none}
+.status-tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:500}
+.status-tag.done{background:rgba(52,199,89,.12);color:var(--status-success)}
+.status-tag.doing{background:rgba(24,93,211,.12);color:var(--primary)}
+.status-tag.pending{background:rgba(255,149,0,.12);color:var(--status-warning)}
+.status-tag.failed{background:rgba(255,59,48,.12);color:var(--status-danger)}
+.row-actions button{background:none;border:none;color:var(--primary);cursor:pointer;font-size:12px;padding:2px 6px;font-family:inherit}
+.row-actions button:hover{text-decoration:underline}
+.row-actions button.del{color:var(--status-danger)}
+.empty{padding:40px;text-align:center;color:var(--grey-3);font-size:13px}
+/* Experience */
+.exp-grid{display:grid;grid-template-columns:320px 1fr;gap:var(--space-md)}
+@media(max-width:900px){.exp-grid{grid-template-columns:1fr}}
+.score-card{background:#fff;border:1px solid var(--grey-4);border-radius:var(--radius-lg);padding:24px;text-align:center;box-shadow:var(--shadow-card)}
+.score-card .num{font-size:56px;font-weight:600;color:var(--primary);line-height:1;margin:12px 0}
+.score-card .yoy{display:inline-flex;align-items:center;gap:4px;font-size:13px;padding:4px 10px;border-radius:12px;background:rgba(52,199,89,.12);color:var(--status-success);font-weight:500}
+.score-card .desc{font-size:12px;color:var(--grey-3);margin-top:12px}
+.biz-country-table{background:#fff;border:1px solid var(--grey-4);border-radius:var(--radius-lg);padding:16px;box-shadow:var(--shadow-card)}
+.biz-country-table table{width:100%;border-collapse:collapse;font-size:13px}
+.biz-country-table th,.biz-country-table td{padding:8px 10px;border-bottom:1px solid var(--bg-section);text-align:left}
+.biz-country-table th{color:var(--grey-2);font-weight:500;background:var(--bg-panel);font-size:12px}
+/* Map */
+.map-grid{display:grid;grid-template-columns:320px 1fr;gap:var(--space-md)}
+@media(max-width:900px){.map-grid{grid-template-columns:1fr}}
+.map-panel{background:#fff;border:1px solid var(--grey-4);border-radius:var(--radius-lg);padding:16px;box-shadow:var(--shadow-card)}
+.map-panel h4{margin:0 0 8px;font-size:14px;font-weight:500;color:var(--grey-1)}
+.map-panel .country-highlight{font-size:20px;font-weight:600;color:var(--primary);margin-bottom:4px}
+.map-panel .headcount-num{font-size:32px;font-weight:600;color:var(--grey-1);margin:4px 0}
+.map-panel ul{list-style:none;padding:0;margin:8px 0 0;font-size:12px;color:var(--grey-2)}
+.map-panel ul li{padding:4px 0;border-bottom:1px dashed var(--bg-section);display:flex;justify-content:space-between}
+.map-panel ul li:last-child{border-bottom:none}
+.map-panel .sub-title{font-size:12px;color:var(--grey-3);margin-top:12px;font-weight:500;text-transform:uppercase;letter-spacing:.5px}
+.map-svg-wrap{background:#fff;border:1px solid var(--grey-4);border-radius:var(--radius-lg);padding:16px;box-shadow:var(--shadow-card);position:relative}
+.map-svg{width:100%;height:420px;display:block}
+.map-svg .country{fill:#E8F0FE;stroke:#FFFFFF;stroke-width:1.2;cursor:pointer;transition:fill .2s}
+.map-svg .country:hover{fill:#BBDEFB}
+.map-svg .country.active{fill:var(--primary)}
+.map-svg .country-label{font-size:11px;fill:var(--grey-2);pointer-events:none;text-anchor:middle;font-weight:500}
+.map-svg .country.active + .country-label,.map-svg .country.active-label{fill:#fff}
+.map-svg .dot{fill:#FF3B30;stroke:#fff;stroke-width:1;pointer-events:none}
+/* Modal */
+.modal-mask{position:fixed;inset:0;background:rgba(32,45,63,.5);display:none;align-items:center;justify-content:center;z-index:100;padding:16px}
+.modal-mask.show{display:flex}
+.modal{background:#fff;border-radius:var(--radius-lg);max-width:600px;width:100%;max-height:90vh;overflow:auto;padding:24px;box-shadow:0 20px 40px rgba(0,0,0,.2)}
+.modal h3{margin:0 0 16px;font-size:18px;font-weight:500;color:var(--grey-1)}
+.modal-form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.modal-form label{font-size:12px;color:var(--grey-2);display:flex;flex-direction:column;gap:4px}
+.modal-form label.full{grid-column:1/-1}
+.modal-form input,.modal-form select,.modal-form textarea{padding:8px 10px;border:1px solid var(--grey-4);border-radius:6px;font-size:13px;font-family:inherit;color:var(--grey-1);outline:none}
+.modal-form input:focus,.modal-form select:focus,.modal-form textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(24,93,211,.1)}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+/* KPI detail modal list */
+.kpi-detail-list{max-height:60vh;overflow:auto;margin-top:12px}
+.kpi-detail-list table{width:100%;border-collapse:collapse;font-size:13px}
+.kpi-detail-list th{padding:8px;background:var(--bg-panel);text-align:left;font-size:12px;font-weight:500;color:var(--grey-2);position:sticky;top:0}
+.kpi-detail-list td{padding:8px;border-bottom:1px solid var(--bg-section)}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="app-header">
+    <div class="brand">
+      <div class="logo">HR</div>
+      <h1>欧洲HR人才分析看板</h1>
+    </div>
+    <div class="header-actions">
+      <button class="btn-ghost" id="btnExport">导出JSON</button>
+      <button class="btn-ghost" id="btnReset">重置数据</button>
+      <button class="btn-primary" id="btnAdd">+ 新增记录</button>
+    </div>
+  </header>
+
+  <!-- 全局筛选 -->
+  <div class="filter-bar">
+    <div class="filter-item">
+      <label>业务部门</label>
+      <select id="filterDept"><option value="">全部</option></select>
+    </div>
+    <div class="filter-item">
+      <label>时间起</label>
+      <input type="month" id="filterMonthStart">
+    </div>
+    <div class="filter-item">
+      <label>时间止</label>
+      <input type="month" id="filterMonthEnd">
+    </div>
+    <div class="filter-item">
+      <label>国家</label>
+      <select id="filterCountry"><option value="">全部</option></select>
+    </div>
+    <button class="btn-ghost" id="btnFilterReset" style="margin-left:auto">清空筛选</button>
+  </div>
+
+  <!-- 第一层：人员情况 -->
+  <section class="section">
+    <div class="section-title"><span class="idx">1</span>人员情况（概览KPI）<span class="sub">两行分组：无图 + 图表</span></div>
+    <div class="kpi-groups">
+      <div class="kpi-group-block">
+        <div class="kpi-group-title">数值型（无图）</div>
+        <div class="kpi-grid" id="kpiGridPlain"></div>
+      </div>
+      <div class="kpi-group-block">
+        <div class="kpi-group-title">趋势型（含图表）</div>
+        <div class="kpi-grid" id="kpiGridChart"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 第二层：人才结构 -->
+  <section class="section">
+    <div class="section-title"><span class="idx">2</span>人才结构</div>
+    <div class="chart-row" style="margin-bottom:var(--space-md)">
+      <div class="chart-card">
+        <h3>国家分布</h3>
+        <div class="chart-body" id="chartCountry"></div>
+        <div class="chart-caption">数据来源：主表按 country 聚合 · 单位：人</div>
+      </div>
+      <div class="chart-card">
+        <h3>部门分布</h3>
+        <div class="chart-body" id="chartDept"></div>
+        <div class="chart-caption">数据来源：主表按 department 聚合 · 单位：人</div>
+      </div>
+      <div class="chart-card">
+        <h3>人员流动月度趋势</h3>
+        <div class="chart-body" id="chartFlow"></div>
+        <div class="chart-caption">入职/离职/调动 三条曲线，按 eventTime 月度聚合</div>
+      </div>
+    </div>
+    <div class="chart-row">
+      <div class="chart-card">
+        <h3>人才结构（多维切换）</h3>
+        <div class="tab-group" id="talentTabs" style="margin-bottom:12px">
+          <button class="tab-btn active" data-dim="position">岗位占比</button>
+          <button class="tab-btn" data-dim="tenure">司龄</button>
+          <button class="tab-btn" data-dim="age">年龄</button>
+          <button class="tab-btn" data-dim="gender">性别</button>
+          <button class="tab-btn" data-dim="education">学历</button>
+        </div>
+        <div class="chart-body" id="chartTalent"></div>
+        <div class="chart-caption">切换维度即重算图表 · 单位：人</div>
+      </div>
+      <div class="chart-card">
+        <h3>职级结构</h3>
+        <div class="chart-body" id="chartLevel"></div>
+        <div class="chart-caption">按 level (P4~P8) 聚合 · 单位：人</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 第三层：员工体验 -->
+  <section class="section">
+    <div class="section-title"><span class="idx">3</span>员工体验</div>
+    <div class="exp-grid">
+      <div class="score-card">
+        <div style="font-size:13px;color:var(--grey-3)">满意度评分（10分制）</div>
+        <div class="num" id="expScore">--</div>
+        <div class="yoy" id="expYoY">同比 --</div>
+        <div class="desc">数据来源：员工调研，加权平均</div>
+      </div>
+      <div class="chart-row" style="grid-template-columns:1fr 1fr">
+        <div class="chart-card">
+          <h3>离职根因分布</h3>
+          <div class="chart-body" id="chartLeaveReason"></div>
+          <div class="chart-caption">按 leaveReason 聚合 · 类别占比</div>
+        </div>
+        <div class="biz-country-table">
+          <h3 style="margin:0 0 12px;font-size:16px;font-weight:500">业务 × 国家 满意度对比</h3>
+          <table><thead><tr><th>国家</th><th>员工数</th><th>满意度</th><th>同比上月</th></tr></thead>
+          <tbody id="bizCountryBody"></tbody></table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 第四层：人员进展明细 -->
+  <section class="section">
+    <div class="section-title"><span class="idx">4</span>人员进展明细<span class="sub">同容器 Tab 切换 · 列筛选 · 时间逆序</span></div>
+    <div class="detail-container">
+      <div class="detail-toolbar">
+        <div class="tab-group" id="detailTabs">
+          <button class="tab-btn active" data-biz="入职">入职</button>
+          <button class="tab-btn" data-biz="离职">离职</button>
+          <button class="tab-btn" data-biz="调动">内部调动/外派</button>
+          <button class="tab-btn" data-biz="续签">合同续签</button>
+          <button class="tab-btn" data-biz="签证">签证进展</button>
+          <button class="tab-btn" data-biz="固资">固资</button>
+        </div>
+        <div class="count" id="detailCount">共 0 条</div>
+      </div>
+      <div class="table-scroll" id="detailTableWrap"></div>
+    </div>
+  </section>
+
+  <!-- 第五层：工作地图 -->
+  <section class="section">
+    <div class="section-title"><span class="idx">5</span>工作地图<span class="sub">点击国家高亮联动</span></div>
+    <div class="map-grid">
+      <div class="map-panel" id="mapPanel">
+        <div style="font-size:12px;color:var(--grey-3)">当前国家</div>
+        <div class="country-highlight" id="mapCountryName">欧洲全域</div>
+        <div style="font-size:12px;color:var(--grey-3);margin-top:8px">员工人数</div>
+        <div class="headcount-num" id="mapCountryCount">--</div>
+        <div class="sub-title">办公室分布</div>
+        <ul id="mapOffices"></ul>
+        <div class="sub-title">仓库分布</div>
+        <ul id="mapWarehouses"></ul>
+      </div>
+      <div class="map-svg-wrap">
+        <div id="map" style="width:100%;height:420px;border-radius:var(--radius-md);overflow:hidden"></div>
+        <div class="chart-legend" style="margin-top:8px">
+          <span class="legend-item"><span class="legend-dot" style="background:#E8F0FE"></span>未选中</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#185DD3"></span>当前选中</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#FF3B30"></span>办公室/仓库</span>
+        </div>
+        <div class="chart-caption">数据来源：人员进展明细表按 country 聚合 · 单位：人</div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- 新增/编辑弹窗 -->
+<div class="modal-mask" id="modalForm">
+  <div class="modal">
+    <h3 id="modalTitle">新增记录</h3>
+    <form id="recordForm">
+      <div class="modal-form">
+        <label>条线 (bizType)
+          <select name="bizType" required>
+            <option value="入职">入职</option><option value="离职">离职</option>
+            <option value="调动">内部调动/外派</option><option value="续签">合同续签</option>
+            <option value="签证">签证进展</option><option value="固资">固资</option>
+          </select>
+        </label>
+        <label>姓名 <input name="name" required></label>
+        <label>业务部门 <input name="department" required></label>
+        <label>职位 <input name="position"></label>
+        <label>国家
+          <select name="country">
+            <option>德国</option><option>法国</option><option>荷兰</option><option>波兰</option>
+            <option>爱尔兰</option><option>英国</option><option>意大利</option><option>西班牙</option>
+          </select>
+        </label>
+        <label>城市 <input name="city"></label>
+        <label>事件时间 <input type="date" name="eventTime" required></label>
+        <label>状态
+          <select name="status">
+            <option>已完成</option><option>进行中</option><option>待办</option><option>异常</option>
+          </select>
+        </label>
+        <label>年龄 <input type="number" name="age" min="18" max="70"></label>
+        <label>职级
+          <select name="level"><option>P4</option><option>P5</option><option>P6</option><option>P7</option><option>P8</option></select>
+        </label>
+        <label>性别
+          <select name="gender"><option>男</option><option>女</option></select>
+        </label>
+        <label>司龄(年) <input type="number" name="tenure" min="0" max="40"></label>
+        <label>学历
+          <select name="education"><option>本科</option><option>硕士</option><option>博士</option><option>专科</option></select>
+        </label>
+        <label>离职根因
+          <select name="leaveReason">
+            <option value="">-</option>
+            <option>薪资</option><option>发展</option><option>家庭</option>
+            <option>工作强度</option><option>团队氛围</option><option>个人规划</option>
+          </select>
+        </label>
+        <label>满意度评分 <input type="number" name="satisfactionScore" min="0" max="10" step="0.1"></label>
+        <label class="full">进展/备注 <textarea name="progress" rows="2"></textarea></label>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" id="modalCancel">取消</button>
+        <button type="submit" class="btn-primary">保存</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- KPI 穿透明细弹窗 -->
+<div class="modal-mask" id="modalKpi">
+  <div class="modal" style="max-width:800px">
+    <h3 id="kpiModalTitle">指标明细</h3>
+    <div class="kpi-detail-list" id="kpiModalBody"></div>
+    <div class="modal-actions"><button class="btn-ghost" id="kpiModalClose">关闭</button></div>
+  </div>
+</div>
+
+<script>
+/* ============ 常量与静态映射 ============ */
+const COUNTRIES = ['德国','法国','荷兰','波兰','爱尔兰','英国','意大利','西班牙'];
+const DEPARTMENTS = ['技术研发','供应链','销售运营','市场品牌','财务','人力资源','行政后勤'];
+const POSITIONS = ['工程师','高级工程师','产品经理','项目经理','运营专员','销售经理','HRBP','分析师','主管','总监'];
+const LEAVE_REASONS = ['薪资','发展','家庭','工作强度','团队氛围','个人规划'];
+const LEVELS = ['P4','P5','P6','P7','P8'];
+const GENDERS = ['男','女'];
+const EDU = ['本科','硕士','博士','专科'];
+const STATUSES = ['已完成','进行中','待办','异常'];
+const BIZ_TYPES = ['入职','离职','调动','续签','签证','固资'];
+const VISA_TYPES = ['工作签','长期居留','家庭团聚','短期商务'];
+const LEAVE_TYPES = ['主动','被动','协商','退休'];
+const ASSET_SCENES = ['入职配发','离职回收','岗位调整','设备升级'];
+
+/* 国家 -> [x,y] 于 SVG 800x420 视图 */
+const COUNTRY_POS = {
+  '英国':[220,150],'爱尔兰':[150,150],'法国':[290,240],'德国':[400,190],
+  '荷兰':[335,175],'波兰':[490,180],'意大利':[400,290],'西班牙':[220,320]
+};
+/* 国家 -> [经度, 纬度]，用于 jdmap-gl 真实底图打点 */
+const COUNTRY_LATLNG = {
+  '德国':[10.45,51.17],'法国':[2.35,46.60],'荷兰':[5.29,52.13],'波兰':[19.14,52.00],
+  '爱尔兰':[-8.24,53.41],'英国':[-1.55,52.36],'意大利':[12.57,41.87],'西班牙':[-3.75,40.46]
+};
+/* 办公室与仓库分布 */
+const OFFICES = {
+  '德国':['杜塞尔多夫','柏林','法兰克福','慕尼黑'],
+  '法国':['巴黎','里昂'],
+  '荷兰':['阿姆斯特丹','鹿特丹'],
+  '波兰':['华沙','克拉科夫'],
+  '英国':['伦敦','曼彻斯特'],
+  '爱尔兰':['都柏林'],
+  '意大利':['米兰','罗马'],
+  '西班牙':['马德里','巴塞罗那']
+};
+const WAREHOUSES = {
+  '德国':['吉森','奥本豪森','多特蒙德'],
+  '法国':['马赛','里尔'],
+  '荷兰':['埃因霍温'],
+  '波兰':['格但斯克','弗罗茨瓦夫'],
+  '英国':['伯明翰'],
+  '爱尔兰':[],
+  '意大利':['都灵'],
+  '西班牙':['瓦伦西亚']
+};
+
+/* SVG 欧洲国家简化多边形（示意，用于点击交互） */
+const COUNTRY_PATHS = {
+  '英国':'M180,110 L250,105 L255,185 L215,205 L175,180 Z',
+  '爱尔兰':'M100,140 L165,130 L170,180 L110,190 Z',
+  '法国':'M240,215 L340,205 L355,290 L280,305 L240,275 Z',
+  '德国':'M355,150 L455,145 L460,225 L385,240 L360,215 Z',
+  '荷兰':'M310,150 L365,145 L370,190 L315,195 Z',
+  '波兰':'M455,145 L560,150 L565,220 L470,225 Z',
+  '意大利':'M370,260 L440,255 L455,345 L400,360 L370,320 Z',
+  '西班牙':'M155,290 L280,285 L290,360 L165,365 Z'
+};
+
+/* ============ 数据初始化 ============ */
+const STORAGE_KEY = 'europe_hr_dashboard_v1';
+const DATA_VERSION = 1;
+
+function seedData(){
+  const names = ['刘明','王芳','李强','张伟','陈璐','赵敏','孙浩','周静','吴斌','郑洁','钱磊','冯薇','蒋成','沈琪','韩玥','杨昊','许晨','马莉','朱睿','秦悦','冷豪','程蕾','贺涛','纪蓓','唐勇','徐岚','邱鹏','孟然','傅轩','范舟','董萱','袁凯','曲宁','阮清','宋鹏','邹娟','夏磊','梁悦','章明','曹辉'];
+  const now = new Date('2026-07-01');
+  const rows = [];
+  let idSeq = 1;
+  function rand(arr){return arr[Math.floor(Math.random()*arr.length)]}
+  function randInt(a,b){return Math.floor(Math.random()*(b-a+1))+a}
+  function randDateBetween(monthsAgoMax){
+    const d = new Date(now);
+    d.setMonth(d.getMonth()-randInt(0,monthsAgoMax));
+    d.setDate(randInt(1,28));
+    return d.toISOString().slice(0,10);
+  }
+  for(let i=0;i<48;i++){
+    const biz = rand(BIZ_TYPES);
+    const country = rand(COUNTRIES);
+    const city = rand(OFFICES[country]||['-']);
+    const dept = rand(DEPARTMENTS);
+    const eventTime = randDateBetween(6);
+    const row = {
+      id: 'r'+(idSeq++)+'-'+Date.now().toString(36).slice(-4),
+      bizType: biz,
+      name: rand(names),
+      department: dept,
+      position: rand(POSITIONS),
+      country, city,
+      eventTime,
+      status: rand(STATUSES),
+      progress: biz==='入职'?'背调完成，待报到':biz==='离职'?'交接中':biz==='调动'?'调令下发':biz==='续签'?'合同待签署':biz==='签证'?'材料准备中':'资产已登记',
+      age: randInt(24,52),
+      level: rand(LEVELS),
+      gender: rand(GENDERS),
+      tenure: randInt(0,15),
+      education: rand(EDU),
+      satisfactionScore: +(6+Math.random()*4).toFixed(1)
+    };
+    if(biz==='离职'){row.leaveReason=rand(LEAVE_REASONS);row.leaveType=rand(LEAVE_TYPES);}
+    if(biz==='签证'){row.visaType=rand(VISA_TYPES);}
+    if(biz==='续签'){
+      row.expireDate=randDateBetween(1);
+      const to=new Date(row.expireDate);to.setFullYear(to.getFullYear()+randInt(1,3));
+      row.renewTo=to.toISOString().slice(0,10);
+    }
+    if(biz==='固资'){row.assetScene=rand(ASSET_SCENES);}
+    rows.push(row);
+  }
+  return rows;
+}
+
+function loadData(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw){
+      const obj = JSON.parse(raw);
+      if(obj && obj.version===DATA_VERSION && Array.isArray(obj.rows)) return obj.rows;
+    }
+  }catch(e){}
+  const rows = seedData();
+  saveData(rows);
+  return rows;
+}
+function saveData(rows){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({version:DATA_VERSION,rows,ts:Date.now()}));
+}
+
+/* ============ 全局状态 ============ */
+let allRows = loadData();
+let currentMetricRows = [];   // 筛选后主表
+let currentMetrics = {};
+let activeCountry = null;
+let activeBiz = '入职';
+let activeTalentDim = 'position';
+let colFilters = {};
+let editingId = null;
+
+/* ============ 通用工具 ============ */
+function groupCount(rows, field){
+  const m = {};
+  rows.forEach(r=>{const k=r[field]; if(!k) return; m[k]=(m[k]||0)+1;});
+  return m;
+}
+function monthKey(d){return (d||'').slice(0,7)}
+function buildMonthlySeries(rows, filterFn){
+  const m = {};
+  rows.forEach(r=>{
+    if(filterFn && !filterFn(r)) return;
+    const k = monthKey(r.eventTime); if(!k) return;
+    m[k] = (m[k]||0)+1;
+  });
+  return Object.keys(m).sort().map(k=>({month:k,value:m[k]}));
+}
+function fmt(n){return typeof n==='number'?(Math.round(n*100)/100).toLocaleString():n}
+
+/* ============ 指标计算 ============ */
+function getFilterState(){
+  return {
+    dept: document.getElementById('filterDept').value,
+    monthStart: document.getElementById('filterMonthStart').value,
+    monthEnd: document.getElementById('filterMonthEnd').value,
+    country: document.getElementById('filterCountry').value
+  };
+}
+function applyFilters(){
+  const f = getFilterState();
+  currentMetricRows = allRows.filter(r=>{
+    if(f.dept && r.department!==f.dept) return false;
+    if(f.country && r.country!==f.country) return false;
+    const mk = monthKey(r.eventTime);
+    if(f.monthStart && mk<f.monthStart) return false;
+    if(f.monthEnd && mk>f.monthEnd) return false;
+    return true;
+  });
+  computeKpiMetrics(currentMetricRows);
+  renderAll();
+}
+
+function computeKpiMetrics(rows){
+  const now = new Date('2026-07-01');
+  const curMonth = now.toISOString().slice(0,7);
+  const year = now.getFullYear();
+  const monthly = biz => rows.filter(r=>r.bizType===biz && monthKey(r.eventTime)===curMonth).length;
+  const ytd = biz => rows.filter(r=>r.bizType===biz && r.eventTime && r.eventTime.slice(0,4)==String(year)).length;
+  const totalHead = new Set(rows.filter(r=>r.bizType==='入职').map(r=>r.name)).size + Math.round(rows.length*3.2);
+  const ages = rows.map(r=>r.age).filter(Boolean);
+  const levels = rows.map(r=>+r.level.replace('P','')).filter(v=>!isNaN(v));
+  const transferIn = rows.filter(r=>r.bizType==='调动' && /进|入/.test(r.progress||'')).length;
+  const transferOut = rows.filter(r=>r.bizType==='调动' && !/进|入/.test(r.progress||'')).length;
+  // 上月对比（简化：环比）
+  const prev = new Date(now); prev.setMonth(prev.getMonth()-1);
+  const prevMonth = prev.toISOString().slice(0,7);
+  const monthlyPrev = biz => rows.filter(r=>r.bizType===biz && monthKey(r.eventTime)===prevMonth).length;
+  function delta(cur,prv){if(!prv)return 0; return +(((cur-prv)/prv*100).toFixed(1));}
+
+  currentMetrics = {
+    monthlyOnboard:{value:monthly('入职'),delta:delta(monthly('入职'),monthlyPrev('入职')),biz:'入职'},
+    ytdOnboard:{value:ytd('入职'),series:buildMonthlySeries(rows,r=>r.bizType==='入职'),biz:'入职'},
+    monthlyLocalLeave:{value:monthly('离职'),delta:delta(monthly('离职'),monthlyPrev('离职')),biz:'离职'},
+    ytdLeave:{value:ytd('离职'),series:buildMonthlySeries(rows,r=>r.bizType==='离职'),biz:'离职'},
+    monthlyVisa:{value:monthly('签证'),delta:delta(monthly('签证'),monthlyPrev('签证')),biz:'签证'},
+    ytdVisa:{value:ytd('签证'),series:buildMonthlySeries(rows,r=>r.bizType==='签证'),biz:'签证'},
+    monthlyRenew:{value:monthly('续签'),delta:delta(monthly('续签'),monthlyPrev('续签')),biz:'续签'},
+    ytdRenew:{value:ytd('续签'),series:buildMonthlySeries(rows,r=>r.bizType==='续签'),biz:'续签'},
+    transferInOut:{value:transferIn+' / '+transferOut,barData:[{k:'进',v:transferIn},{k:'出',v:transferOut}],biz:'调动'},
+    avgAge:{value: ages.length?+(ages.reduce((a,b)=>a+b,0)/ages.length).toFixed(1):0,unit:'岁'},
+    avgLevel:{value: levels.length?'P'+(levels.reduce((a,b)=>a+b,0)/levels.length).toFixed(1):'-'},
+    totalHeadcount:{value: totalHead, unit:'人'}
+  };
+}
+
+function healthOf(key, m){
+  // 简单规则
+  if(key==='monthlyLocalLeave' || key==='ytdLeave') return m.value>10?'danger':m.value>5?'warning':'healthy';
+  if(key==='monthlyOnboard' || key==='ytdOnboard') return m.value>=5?'healthy':m.value>=2?'warning':'danger';
+  if(key==='totalHeadcount') return 'healthy';
+  return m.delta>=0?'healthy':m.delta<-10?'warning':'healthy';
+}
+function healthLabel(k){return k==='healthy'?'● 健康':k==='warning'?'● 预警':'● 风险'}
+
+/* ============ 迷你 SVG 图表工具 ============ */
+function svgLine(points, w, h, color){
+  if(!points.length) return `<text x="50%" y="50%" text-anchor="middle" fill="#8C96A5" font-size="11">暂无数据</text>`;
+  const max = Math.max(...points.map(p=>p.value),1);
+  const step = points.length>1 ? w/(points.length-1) : 0;
+  const coords = points.map((p,i)=>[i*step, h-(p.value/max)*(h-10)-5]);
+  const d = coords.map((c,i)=>(i===0?'M':'L')+c[0].toFixed(1)+' '+c[1].toFixed(1)).join(' ');
+  const area = d+' L '+w+' '+h+' L 0 '+h+' Z';
+  return `
+    <path d="${area}" fill="${color}" opacity="0.12"/>
+    <path d="${d}" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round"/>
+    ${coords.map(c=>`<circle cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="2.5" fill="${color}"/>`).join('')}
+  `;
+}
+function svgBars(data, w, h, colors){
+  if(!data.length) return `<text x="50%" y="50%" text-anchor="middle" fill="#8C96A5" font-size="11">暂无数据</text>`;
+  const max = Math.max(...data.map(d=>d.v),1);
+  const barW = w/data.length*0.6, gap = w/data.length*0.4;
+  return data.map((d,i)=>{
+    const x = i*(barW+gap)+gap/2;
+    const bh = (d.v/max)*(h-30);
+    const y = h-bh-20;
+    const c = colors ? colors[i%colors.length] : '#185DD3';
+    return `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${bh.toFixed(1)}" fill="${c}" rx="3"/>
+    <text x="${(x+barW/2).toFixed(1)}" y="${(y-4).toFixed(1)}" text-anchor="middle" font-size="10" fill="#5A6778">${d.v}</text>
+    <text x="${(x+barW/2).toFixed(1)}" y="${(h-6).toFixed(1)}" text-anchor="middle" font-size="10" fill="#8C96A5">${d.k}</text>`;
+  }).join('');
+}
+function svgPie(data, cx, cy, r){
+  const total = data.reduce((s,d)=>s+d.v,0)||1;
+  const colors = ['#185DD3','#42A5F5','#64B5F6','#7C4DFF','#00BFA5','#FF9500'];
+  let angle = -Math.PI/2;
+  return data.map((d,i)=>{
+    const slice = d.v/total*Math.PI*2;
+    const x1 = cx + Math.cos(angle)*r;
+    const y1 = cy + Math.sin(angle)*r;
+    const x2 = cx + Math.cos(angle+slice)*r;
+    const y2 = cy + Math.sin(angle+slice)*r;
+    const large = slice>Math.PI?1:0;
+    const path = `M ${cx} ${cy} L ${x1.toFixed(2)} ${y1.toFixed(2)} A ${r} ${r} 0 ${large} 1 ${x2.toFixed(2)} ${y2.toFixed(2)} Z`;
+    angle += slice;
+    return `<path d="${path}" fill="${colors[i%colors.length]}" stroke="#fff" stroke-width="1.5"/>`;
+  }).join('');
+}
+function pieLegend(data){
+  const colors = ['#185DD3','#42A5F5','#64B5F6','#7C4DFF','#00BFA5','#FF9500'];
+  return `<div class="chart-legend">${data.map((d,i)=>`<span class="legend-item"><span class="legend-dot" style="background:${colors[i%colors.length]}"></span>${d.k} ${d.v}</span>`).join('')}</div>`;
+}
+
+/* ============ 渲染：KPI ============ */
+const KPI_DEFS = [
+  {key:'monthlyOnboard',label:'本月入职',unit:'人',chart:'none',group:'plain'},
+  {key:'monthlyLocalLeave',label:'本地离职',unit:'人',chart:'none',group:'plain'},
+  {key:'monthlyVisa',label:'签证',unit:'件',chart:'none',group:'plain'},
+  {key:'monthlyRenew',label:'合同续签',unit:'人',chart:'none',group:'plain'},
+  {key:'avgAge',label:'平均年龄',unit:'岁',chart:'none',group:'plain'},
+  {key:'avgLevel',label:'平均职级',unit:'',chart:'none',group:'plain'},
+  {key:'totalHeadcount',label:'当期总人数',unit:'人',chart:'none',group:'plain'},
+  {key:'ytdOnboard',label:'年度累积入职',unit:'人',chart:'line',group:'chart'},
+  {key:'ytdLeave',label:'年度累积离职',unit:'人',chart:'line',group:'chart'},
+  {key:'ytdVisa',label:'年度积累签证',unit:'件',chart:'line',group:'chart'},
+  {key:'ytdRenew',label:'年度积累续签',unit:'人',chart:'line',group:'chart'},
+  {key:'transferInOut',label:'调动(进/出)',unit:'人',chart:'bar',group:'chart'}
+];
+
+function renderKpiCards(){
+  const plainWrap = document.getElementById('kpiGridPlain');
+  const chartWrap = document.getElementById('kpiGridChart');
+  plainWrap.innerHTML='';
+  chartWrap.innerHTML='';
+  KPI_DEFS.forEach(def=>{
+    const m = currentMetrics[def.key]||{value:'-'};
+    const h = healthOf(def.key,m);
+    const delta = typeof m.delta==='number'? m.delta : null;
+    const yoyCls = delta==null?'':(delta>0?'up':delta<0?'down':'flat');
+    const yoyTxt = delta==null?'':`${delta>0?'▲':delta<0?'▼':'▬'} ${Math.abs(delta)}% 环比`;
+    let chartHtml='';
+    if(def.chart==='line' && m.series){
+      chartHtml = `<div class="chart-wrap">
+        <div class="chart-title">近月趋势</div>
+        <svg class="chart-svg" viewBox="0 0 200 90" preserveAspectRatio="none">${svgLine(m.series.map(s=>({value:s.value})),200,90,'#185DD3')}</svg>
+        <div class="chart-legend"><span class="legend-item"><span class="legend-dot" style="background:#185DD3"></span>${def.label}</span></div>
+        <div class="chart-caption">来源：主表按 eventTime 月聚合</div>
+      </div>`;
+    } else if(def.chart==='bar' && m.barData){
+      chartHtml = `<div class="chart-wrap">
+        <div class="chart-title">进 / 出 对比</div>
+        <svg class="chart-svg" viewBox="0 0 200 110" preserveAspectRatio="none">${svgBars(m.barData,200,110,['#185DD3','#7C4DFF'])}</svg>
+        <div class="chart-legend"><span class="legend-item"><span class="legend-dot" style="background:#185DD3"></span>进</span><span class="legend-item"><span class="legend-dot" style="background:#7C4DFF"></span>出</span></div>
+        <div class="chart-caption">来源：主表 bizType=调动 · 按方向聚合</div>
+      </div>`;
+    }
+    const cls = def.chart==='none'?'metric-card':'metric-card has-chart';
+    const html = `<div class="${cls}" data-kpi="${def.key}">
+      <div class="label">${def.label}</div>
+      <div class="value">${fmt(m.value)}<span class="unit">${def.unit||''}</span></div>
+      ${delta!=null?`<span class="yoy ${yoyCls}">${yoyTxt}</span>`:''}
+      <div class="health-badge ${h}">${healthLabel(h)}</div>
+      ${chartHtml}
+    </div>`;
+    (def.group==='plain'?plainWrap:chartWrap).insertAdjacentHTML('beforeend',html);
+  });
+  // 卡片点击
+  document.querySelectorAll('.metric-card[data-kpi]').forEach(el=>{
+    el.addEventListener('click',()=>openKpiDetail(el.dataset.kpi));
+  });
+}
+
+/* ============ 第二层：人才结构 ============ */
+function renderCountryDistribution(){
+  const g = groupCount(currentMetricRows,'country');
+  const data = COUNTRIES.map(c=>({k:c,v:g[c]||0}));
+  document.getElementById('chartCountry').innerHTML =
+    `<svg viewBox="0 0 400 220" preserveAspectRatio="none" style="width:100%;height:220px">${svgBars(data,400,220)}</svg>`;
+}
+function renderDeptDistribution(){
+  const g = groupCount(currentMetricRows,'department');
+  const data = DEPARTMENTS.map(c=>({k:c,v:g[c]||0}));
+  document.getElementById('chartDept').innerHTML =
+    `<svg viewBox="0 0 400 220" preserveAspectRatio="none" style="width:100%;height:220px">${svgBars(data,400,220,['#185DD3','#42A5F5','#00BFA5','#7C4DFF','#FF9500','#34C759','#8C96A5'])}</svg>`;
+}
+function renderFlowTrend(){
+  const onboard = buildMonthlySeries(currentMetricRows,r=>r.bizType==='入职');
+  const leave   = buildMonthlySeries(currentMetricRows,r=>r.bizType==='离职');
+  const transfer= buildMonthlySeries(currentMetricRows,r=>r.bizType==='调动');
+  const months = Array.from(new Set([...onboard,...leave,...transfer].map(x=>x.month))).sort();
+  const build = arr => months.map(m=>{const f=arr.find(x=>x.month===m);return {value:f?f.value:0};});
+  const w=400,h=220;
+  const p1=build(onboard),p2=build(leave),p3=build(transfer);
+  const svg = `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" style="width:100%;height:${h}px">
+    ${svgLine(p1,w,h,'#185DD3')}
+    ${svgLine(p2,w,h,'#FF3B30')}
+    ${svgLine(p3,w,h,'#7C4DFF')}
+    ${months.map((m,i)=>`<text x="${(i*(w/(months.length-1||1))).toFixed(1)}" y="${h-2}" font-size="9" fill="#8C96A5" text-anchor="middle">${m.slice(5)}</text>`).join('')}
+  </svg>
+  <div class="chart-legend">
+    <span class="legend-item"><span class="legend-dot" style="background:#185DD3"></span>入职</span>
+    <span class="legend-item"><span class="legend-dot" style="background:#FF3B30"></span>离职</span>
+    <span class="legend-item"><span class="legend-dot" style="background:#7C4DFF"></span>调动</span>
+  </div>`;
+  document.getElementById('chartFlow').innerHTML = svg;
+}
+function renderTalentStructure(dim){
+  const bucket = (r)=>{
+    if(dim==='age'){const a=r.age||0; if(a<30)return '<30岁';if(a<40)return '30-39岁';if(a<50)return '40-49岁';return '≥50岁';}
+    if(dim==='tenure'){const t=r.tenure||0;if(t<1)return '<1年';if(t<3)return '1-3年';if(t<5)return '3-5年';return '≥5年';}
+    return r[dim];
+  };
+  const m={};
+  currentMetricRows.forEach(r=>{const k=bucket(r);if(!k)return;m[k]=(m[k]||0)+1;});
+  const data = Object.keys(m).map(k=>({k,v:m[k]}));
+  const el = document.getElementById('chartTalent');
+  if(!data.length){el.innerHTML='<div class="empty">暂无数据</div>';return;}
+  // 用饼图展示占比
+  const size=200;
+  el.innerHTML = `
+    <svg viewBox="0 0 ${size*2} ${size}" style="width:100%;height:220px">
+      <g transform="translate(${size/2+10},${size/2})">${svgPie(data,0,0,size/2-10)}</g>
+      <g transform="translate(${size+20},20)" font-size="11" fill="#5A6778">
+        ${data.map((d,i)=>{const colors=['#185DD3','#42A5F5','#64B5F6','#7C4DFF','#00BFA5','#FF9500'];return `<g transform="translate(0,${i*18})"><rect width="10" height="10" fill="${colors[i%colors.length]}" rx="2"/><text x="16" y="9">${d.k} · ${d.v}人 · ${((d.v/data.reduce((s,x)=>s+x.v,0))*100).toFixed(1)}%</text></g>`}).join('')}
+      </g>
+    </svg>`;
+}
+function renderLevelStructure(){
+  const g = groupCount(currentMetricRows,'level');
+  const data = LEVELS.map(l=>({k:l,v:g[l]||0}));
+  document.getElementById('chartLevel').innerHTML =
+    `<svg viewBox="0 0 400 220" preserveAspectRatio="none" style="width:100%;height:220px">${svgBars(data,400,220)}</svg>`;
+}
+
+/* ============ 第三层：员工体验 ============ */
+function renderExperience(){
+  const scores = currentMetricRows.map(r=>r.satisfactionScore).filter(v=>typeof v==='number');
+  const avg = scores.length?+(scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(2):0;
+  document.getElementById('expScore').textContent = avg || '--';
+  const yoy = (+(Math.random()*0.4-0.1)).toFixed(2);
+  const yoyEl = document.getElementById('expYoY');
+  yoyEl.textContent = `同比 ${yoy>=0?'+':''}${yoy}`;
+  yoyEl.style.background = yoy>=0?'rgba(52,199,89,.12)':'rgba(255,59,48,.12)';
+  yoyEl.style.color = yoy>=0?'#34C759':'#FF3B30';
+  // 离职根因饼图
+  const g = groupCount(currentMetricRows.filter(r=>r.bizType==='离职'),'leaveReason');
+  const data = Object.keys(g).map(k=>({k,v:g[k]}));
+  const el = document.getElementById('chartLeaveReason');
+  if(!data.length){el.innerHTML='<div class="empty">暂无离职数据</div>';}
+  else{
+    el.innerHTML = `<svg viewBox="0 0 220 220" style="width:100%;height:220px"><g transform="translate(110,110)">${svgPie(data,0,0,90)}</g></svg>${pieLegend(data)}`;
+  }
+  // 业务 x 国家
+  const tbody = document.getElementById('bizCountryBody');
+  tbody.innerHTML = COUNTRIES.map(c=>{
+    const rows = currentMetricRows.filter(r=>r.country===c);
+    const scoreArr = rows.map(r=>r.satisfactionScore).filter(v=>typeof v==='number');
+    const avg2 = scoreArr.length?(scoreArr.reduce((a,b)=>a+b,0)/scoreArr.length):0;
+    const dlt = (Math.random()*0.6-0.3).toFixed(2);
+    const color = dlt>=0?'#34C759':'#FF3B30';
+    return `<tr><td>${c}</td><td>${rows.length}</td><td>${avg2?avg2.toFixed(2):'--'}</td><td style="color:${color}">${dlt>=0?'+':''}${dlt}</td></tr>`;
+  }).join('');
+}
+
+/* ============ 第四层：明细表 ============ */
+const DETAIL_CONFIG = {
+  '入职': ['No','姓名','部门','职位','地点','时间','状态','进展'],
+  '离职': ['No','类型','姓名','部门','职位','地点','时间','状态','进展'],
+  '调动': ['No','姓名','部门','职位','国家','时间','状态','进展'],
+  '续签': ['No','姓名','部门','职位','国家','到期','续至','状态','进展'],
+  '签证': ['No','类型','姓名','部门','职位','国家','状态','进展'],
+  '固资': ['No','场景','姓名','部门','职位','地点','状态','进展']
+};
+function statusClass(s){return s==='已完成'?'done':s==='进行中'?'doing':s==='待办'?'pending':'failed'}
+function rowCell(col, r){
+  switch(col){
+    case '姓名':return r.name;
+    case '部门':return r.department;
+    case '职位':return r.position||'';
+    case '地点':return (r.country||'')+(r.city?' · '+r.city:'');
+    case '国家':return r.country||'';
+    case '时间':return r.eventTime||'';
+    case '到期':return r.expireDate||'';
+    case '续至':return r.renewTo||'';
+    case '类型':return r.leaveType||r.visaType||'';
+    case '场景':return r.assetScene||'';
+    case '状态':return `<span class="status-tag ${statusClass(r.status)}">${r.status}</span>`;
+    case '进展':return r.progress||'';
+    default:return '';
+  }
+}
+function renderDetailTable(){
+  const cols = DETAIL_CONFIG[activeBiz];
+  let rows = currentMetricRows.filter(r=>r.bizType===activeBiz);
+  // 列筛选
+  Object.entries(colFilters).forEach(([col,val])=>{
+    if(!val) return;
+    rows = rows.filter(r=>{
+      const cell = String(rowCell(col,r)).replace(/<[^>]+>/g,'');
+      return cell.toLowerCase().includes(String(val).toLowerCase());
+    });
+  });
+  rows.sort((a,b)=>(b.eventTime||'').localeCompare(a.eventTime||''));
+  document.getElementById('detailCount').textContent = '共 '+rows.length+' 条';
+  const wrap = document.getElementById('detailTableWrap');
+  if(!rows.length){wrap.innerHTML='<div class="empty">当前条件下无数据</div>';return;}
+  const th = cols.map(c=>{
+    if(c==='No') return `<th style="width:50px">No</th>`;
+    return `<th>${c}<div class="col-filter"><input type="text" placeholder="筛选" value="${colFilters[c]||''}" data-col="${c}"></div></th>`;
+  }).join('')+'<th style="width:120px">操作</th>';
+  const body = rows.map((r,i)=>{
+    const cells = cols.map(c=>c==='No'?`<td>${i+1}</td>`:`<td>${rowCell(c,r)}</td>`).join('');
+    return `<tr>${cells}<td class="row-actions"><button data-edit="${r.id}">编辑</button><button class="del" data-del="${r.id}">删除</button></tr>`;
+  }).join('');
+  wrap.innerHTML = `<table class="data-table"><thead><tr>${th}</tr></thead><tbody>${body}</tbody></table>`;
+  // 列筛选事件
+  wrap.querySelectorAll('input[data-col]').forEach(inp=>{
+    inp.addEventListener('input', e=>{
+      colFilters[e.target.dataset.col]=e.target.value;
+      renderDetailTable();
+      // 保持焦点
+      setTimeout(()=>{
+        const sel = wrap.querySelector(`input[data-col="${e.target.dataset.col}"]`);
+        if(sel){sel.focus();sel.setSelectionRange(sel.value.length,sel.value.length);}
+      },0);
+    });
+  });
+  wrap.querySelectorAll('button[data-edit]').forEach(b=>b.addEventListener('click',()=>openEdit(b.dataset.edit)));
+  wrap.querySelectorAll('button[data-del]').forEach(b=>b.addEventListener('click',()=>{
+    if(confirm('确认删除该记录？')){
+      allRows = allRows.filter(r=>r.id!==b.dataset.del);
+      saveData(allRows); applyFilters();
+    }
+  }));
+}
+
+/* ============ 第五层：工作地图（jdmap-gl 真实底图） ============ */
+let _jdMap = null;          // 地图实例缓存，避免重复创建
+let _jdMarkers = [];        // 国家标记缓存
+
+function renderEuropeMap(){
+  const container = document.getElementById('map');
+  if(!container) return;
+  // SDK 未加载时降级：给出提示，仍保留右侧面板联动
+  if(typeof jdmapgl === 'undefined'){
+    container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--grey-3);font-size:13px">地图 SDK 加载中或网络受限，右侧面板数据正常</div>';
+    renderCountryPanel();
+    return;
+  }
+  // 首次创建地图实例
+  if(!_jdMap){
+    _jdMap = new jdmapgl.Map({
+      container: 'map',
+      style: 'jdmap://style/uat/v1',
+      center: [10.0, 51.0],
+      zoom: 4,
+      pitch: 0,
+      bearing: 0,
+      appKey: '06e9963fac2641eda9b46aeca086cc18'
+    });
+    _jdMap.on('load', ()=>{ drawCountryMarkers(); });
+    // 底图/瓦片加载失败兜底：网络不可达、CORS 拦截、UAT 需内网等场景给出明确提示
+    _jdMap.on('error', (e)=>{
+      console.error('[jdmap-gl] 底图加载失败：', e && e.error);
+      const c = document.getElementById('map');
+      if(c) c.setAttribute('data-map-error','1');
+    });
+  } else {
+    drawCountryMarkers();
+  }
+  renderCountryPanel();
+}
+
+/* 按 country 聚合 currentMetricRows 打点，绑定点击联动 */
+function drawCountryMarkers(){
+  if(!_jdMap) return;
+  const g = groupCount(currentMetricRows,'country');
+  // 清除旧标记
+  _jdMarkers.forEach(m=>{ try{ m.remove(); }catch(e){} });
+  _jdMarkers = [];
+  Object.entries(COUNTRY_LATLNG).forEach(([country,ll])=>{
+    const active = country===activeCountry;
+    const el = document.createElement('div');
+    el.style.cssText = 'display:flex;flex-direction:column;align-items:center;cursor:pointer;user-select:none';
+    el.innerHTML = `
+      <div style="background:${active?'#185DD3':'#E8F0FE'};color:${active?'#fff':'#185DD3'};border:2px solid #185DD3;border-radius:12px;padding:2px 8px;font-size:12px;font-weight:600;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.15)">${country} · ${g[country]||0}</div>
+      ${active?'<div style="width:8px;height:8px;border-radius:50%;background:#FF3B30;margin-top:2px"></div>':''}`;
+    el.addEventListener('click', ()=>onCountryClick(country));
+    const marker = new jdmapgl.Marker({element: el}).setLngLat(ll).addTo(_jdMap);
+    _jdMarkers.push(marker);
+  });
+}
+
+function onCountryClick(country){
+  activeCountry = activeCountry===country?null:country;
+  drawCountryMarkers();
+  renderCountryPanel();
+  if(_jdMap && activeCountry && COUNTRY_LATLNG[activeCountry]){
+    _jdMap.flyTo({center: COUNTRY_LATLNG[activeCountry], zoom: 5.5});
+  } else if(_jdMap){
+    _jdMap.flyTo({center: [10.0,51.0], zoom: 4});
+  }
+}
+function renderCountryPanel(){
+  const g = groupCount(currentMetricRows,'country');
+  if(!activeCountry){
+    document.getElementById('mapCountryName').textContent = '欧洲全域';
+    document.getElementById('mapCountryCount').textContent = currentMetricRows.length;
+    document.getElementById('mapOffices').innerHTML = Object.entries(OFFICES).map(([k,v])=>`<li><span>${k}</span><span>${v.length} 处</span></li>`).join('');
+    document.getElementById('mapWarehouses').innerHTML = Object.entries(WAREHOUSES).map(([k,v])=>`<li><span>${k}</span><span>${v.length} 处</span></li>`).join('');
+  } else {
+    document.getElementById('mapCountryName').textContent = activeCountry;
+    document.getElementById('mapCountryCount').textContent = g[activeCountry]||0;
+    document.getElementById('mapOffices').innerHTML = (OFFICES[activeCountry]||[]).map(c=>`<li><span>${c}</span><span>办公室</span></li>`).join('')||'<li>暂无数据</li>';
+    document.getElementById('mapWarehouses').innerHTML = (WAREHOUSES[activeCountry]||[]).map(c=>`<li><span>${c}</span><span>仓库</span></li>`).join('')||'<li>暂无数据</li>';
+  }
+}
+
+/* ============ KPI 穿透明细 ============ */
+function getMetricDetailRows(key){
+  const m = currentMetrics[key];
+  const now = '2026-07';
+  if(key==='monthlyOnboard') return currentMetricRows.filter(r=>r.bizType==='入职' && monthKey(r.eventTime)===now);
+  if(key==='monthlyLocalLeave') return currentMetricRows.filter(r=>r.bizType==='离职' && monthKey(r.eventTime)===now);
+  if(key==='monthlyVisa') return currentMetricRows.filter(r=>r.bizType==='签证' && monthKey(r.eventTime)===now);
+  if(key==='monthlyRenew') return currentMetricRows.filter(r=>r.bizType==='续签' && monthKey(r.eventTime)===now);
+  if(key==='ytdOnboard') return currentMetricRows.filter(r=>r.bizType==='入职');
+  if(key==='ytdLeave') return currentMetricRows.filter(r=>r.bizType==='离职');
+  if(key==='ytdVisa') return currentMetricRows.filter(r=>r.bizType==='签证');
+  if(key==='ytdRenew') return currentMetricRows.filter(r=>r.bizType==='续签');
+  if(key==='transferInOut') return currentMetricRows.filter(r=>r.bizType==='调动');
+  if(key==='totalHeadcount' || key==='avgAge' || key==='avgLevel') return currentMetricRows;
+  return [];
+}
+function openKpiDetail(key){
+  const def = KPI_DEFS.find(d=>d.key===key);
+  const rows = getMetricDetailRows(key).sort((a,b)=>(b.eventTime||'').localeCompare(a.eventTime||''));
+  document.getElementById('kpiModalTitle').textContent = `【${def.label}】穿透明细（${rows.length} 条）`;
+  document.getElementById('kpiModalBody').innerHTML = rows.length?`<table>
+    <thead><tr><th>条线</th><th>姓名</th><th>部门</th><th>国家</th><th>时间</th><th>状态</th><th>进展</th></tr></thead>
+    <tbody>${rows.map(r=>`<tr><td>${r.bizType}</td><td>${r.name}</td><td>${r.department}</td><td>${r.country}</td><td>${r.eventTime}</td><td><span class="status-tag ${statusClass(r.status)}">${r.status}</span></td><td>${r.progress||''}</td></tr>`).join('')}</tbody></table>`:'<div class="empty">无数据</div>';
+  document.getElementById('modalKpi').classList.add('show');
+}
+
+/* ============ 全局筛选选项初始化 ============ */
+function initFilterOptions(){
+  const deptSel = document.getElementById('filterDept');
+  const countrySel = document.getElementById('filterCountry');
+  DEPARTMENTS.forEach(d=>deptSel.insertAdjacentHTML('beforeend',`<option>${d}</option>`));
+  COUNTRIES.forEach(c=>countrySel.insertAdjacentHTML('beforeend',`<option>${c}</option>`));
+}
+
+/* ============ 新增/编辑弹窗 ============ */
+function openAdd(){
+  editingId = null;
+  document.getElementById('modalTitle').textContent='新增记录';
+  document.getElementById('recordForm').reset();
+  document.querySelector('#recordForm [name=eventTime]').value = new Date().toISOString().slice(0,10);
+  document.getElementById('modalForm').classList.add('show');
+}
+function openEdit(id){
+  const r = allRows.find(x=>x.id===id); if(!r) return;
+  editingId = id;
+  document.getElementById('modalTitle').textContent='编辑记录';
+  const form = document.getElementById('recordForm');
+  Object.entries(r).forEach(([k,v])=>{if(form[k]) form[k].value=v;});
+  document.getElementById('modalForm').classList.add('show');
+}
+function closeModal(){document.getElementById('modalForm').classList.remove('show');}
+
+/* ============ 总渲染 ============ */
+function renderAll(){
+  renderKpiCards();
+  renderCountryDistribution();
+  renderDeptDistribution();
+  renderFlowTrend();
+  renderTalentStructure(activeTalentDim);
+  renderLevelStructure();
+  renderExperience();
+  renderDetailTable();
+  renderEuropeMap();
+}
+
+/* ============ 事件绑定 ============ */
+document.addEventListener('DOMContentLoaded',()=>{
+  initFilterOptions();
+  ['filterDept','filterMonthStart','filterMonthEnd','filterCountry'].forEach(id=>{
+    document.getElementById(id).addEventListener('change',applyFilters);
+  });
+  document.getElementById('btnFilterReset').addEventListener('click',()=>{
+    document.getElementById('filterDept').value='';
+    document.getElementById('filterMonthStart').value='';
+    document.getElementById('filterMonthEnd').value='';
+    document.getElementById('filterCountry').value='';
+    colFilters={};
+    applyFilters();
+  });
+  document.getElementById('btnAdd').addEventListener('click',openAdd);
+  document.getElementById('modalCancel').addEventListener('click',closeModal);
+  document.getElementById('kpiModalClose').addEventListener('click',()=>document.getElementById('modalKpi').classList.remove('show'));
+  document.getElementById('modalForm').addEventListener('click',e=>{if(e.target.id==='modalForm')closeModal();});
+  document.getElementById('modalKpi').addEventListener('click',e=>{if(e.target.id==='modalKpi')document.getElementById('modalKpi').classList.remove('show');});
+  document.getElementById('recordForm').addEventListener('submit',e=>{
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    const obj = Object.fromEntries(fd.entries());
+    ['age','tenure','satisfactionScore'].forEach(k=>{if(obj[k]!=='') obj[k]=+obj[k];});
+    if(editingId){
+      const idx = allRows.findIndex(r=>r.id===editingId);
+      if(idx>=0) allRows[idx] = {...allRows[idx],...obj};
+    } else {
+      obj.id = 'r'+Date.now().toString(36);
+      allRows.push(obj);
+    }
+    saveData(allRows); closeModal(); applyFilters();
+  });
+  document.getElementById('btnExport').addEventListener('click',()=>{
+    const blob = new Blob([JSON.stringify(allRows,null,2)],{type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href=url; a.download='europe_hr_data.json'; a.click();
+    URL.revokeObjectURL(url);
+  });
+  document.getElementById('btnReset').addEventListener('click',()=>{
+    if(confirm('重置为初始示例数据？此操作不可撤销。')){
+      localStorage.removeItem(STORAGE_KEY);
+      allRows = loadData();
+      applyFilters();
+    }
+  });
+  // 明细 Tab
+  document.querySelectorAll('#detailTabs .tab-btn').forEach(b=>{
+    b.addEventListener('click',()=>{
+      document.querySelectorAll('#detailTabs .tab-btn').forEach(x=>x.classList.remove('active'));
+      b.classList.add('active');
+      activeBiz = b.dataset.biz;
+      colFilters = {};
+      renderDetailTable();
+    });
+  });
+  // 结构 Tab
+  document.querySelectorAll('#talentTabs .tab-btn').forEach(b=>{
+    b.addEventListener('click',()=>{
+      document.querySelectorAll('#talentTabs .tab-btn').forEach(x=>x.classList.remove('active'));
+      b.classList.add('active');
+      activeTalentDim = b.dataset.dim;
+      renderTalentStructure(activeTalentDim);
+    });
+  });
+  applyFilters();
+});
+</script>
+
+<script>
+/* 嵌入幻灯片：将 PgUp/PgDn/空格/Home/End 转发给父页用于翻页；
+   方向键留给 demo 自身交互，不转发 */
+(function(){
+  if (window.parent === window) return;
+  var KEYS = {PageUp:1, PageDown:1, ' ':1, Home:1, End:1};
+  window.addEventListener('keydown', function(e){
+    if (!KEYS[e.key]) return;
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    try {
+      window.parent.dispatchEvent(new window.parent.KeyboardEvent('keydown', {key: e.key}));
+      e.preventDefault();
+    } catch(err){}
+  }, true);
+})();
+</script>
+</body>
+</html>
