@@ -1,0 +1,17 @@
+{
+  "name": "mcp-server-a",
+  "version": "1.0.0",
+  "description": "MCP 服务端 A:封装外部系统 REST API 为 tool + resource(SSE transport)",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "express": "^4.19.2",
+    "dotenv": "^16.4.5"
+  },
+  "keywords": ["mcp", "external-api"],
+  "license": "MIT"
+}

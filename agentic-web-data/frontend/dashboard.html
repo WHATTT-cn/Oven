@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AgenticWebData Dashboard</title>
+  <style>
+    body { font-family: -apple-system, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 24px; background: #f5f6f8; color: #1f2329; }
+    h1 { font-size: 20px; margin: 0 0 16px; }
+    .toolbar { margin-bottom: 16px; display: flex; gap: 12px; align-items: center; }
+    button { padding: 8px 16px; border: none; border-radius: 6px; background: #2f6feb; color: #fff; cursor: pointer; font-size: 14px; }
+    button:disabled { background: #9db8f0; cursor: not-allowed; }
+    .kpi-row { display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
+    .kpi-card { background: #fff; border-radius: 8px; padding: 16px 20px; min-width: 140px; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+    .kpi-card .label { font-size: 12px; color: #8a919e; }
+    .kpi-card .value { font-size: 24px; font-weight: 600; margin-top: 4px; }
+    table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+    th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid #eef0f3; font-size: 14px; }
+    th { background: #fafbfc; color: #5a6270; font-weight: 600; }
+    .status-active { color: #23a55a; }
+    .status-inactive { color: #8a919e; }
+    .status-pending { color: #d9822b; }
+  </style>
+</head>
+<body>
+  <h1>AgenticWebData 数据看板</h1>
+
+  <div class="toolbar">
+    <button id="btnRefresh">刷新数据</button>
+    <span id="status"></span>
+  </div>
+
+  <div class="kpi-row" id="kpiRow"></div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>标题</th>
+        <th>地区</th>
+        <th>分类</th>
+        <th>状态</th>
+        <th>创建日期</th>
+        <th>数值</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+
+  <!-- ==================== 页面字段声明(供 Agent 分析用) ==================== -->
+  <script>
+    // FIELDS / TABLE_COLS 是页面需求的显式声明,子 Agent1 会分析这段来产字段映射
+    const FIELDS = ['id', 'title', 'region', 'category', 'status', 'createdDate', 'value'];
+    const TABLE_COLS = [
+      { key: 'id', label: 'ID' },
+      { key: 'title', label: '标题' },
+      { key: 'region', label: '地区' },
+      { key: 'category', label: '分类' },
+      { key: 'status', label: '状态' },
+      { key: 'createdDate', label: '创建日期' },
+      { key: 'value', label: '数值' },
+    ];
+  </script>
+
+  <!-- ==================== 现有渲染逻辑(零改动) ==================== -->
+  <script>
+    const state = { rows: [] };
+
+    // ⚠️ 示例代码:seedRows 为本地降级/演示数据,生产环境应移除或仅作 fallback
+    function seedRows() {
+      return [
+        { id: 'R001', title: '示例记录A', region: '华北', category: '类型1', status: 'active', createdDate: '2026-01-01', value: 120 },
+        { id: 'R002', title: '示例记录B', region: '华东', category: '类型2', status: 'pending', createdDate: '2026-02-15', value: 88 },
+      ];
+    }
+
+    function metricData(rows) {
+      const total = rows.length;
+      const active = rows.filter(r => r.status === 'active').length;
+      const sum = rows.reduce((s, r) => s + (Number(r.value) || 0), 0);
+      return [
+        { label: '记录总数', value: total },
+        { label: '活跃数', value: active },
+        { label: '数值合计', value: sum },
+      ];
+    }
+
+    function renderKPI() {
+      const el = document.getElementById('kpiRow');
+      el.innerHTML = metricData(state.rows)
+        .map(m => `<div class="kpi-card"><div class="label">${m.label}</div><div class="value">${m.value}</div></div>`)
+        .join('');
+    }
+
+    function renderTable() {
+      const body = document.getElementById('tableBody');
+      body.innerHTML = state.rows.map(r => `
+        <tr>
+          ${TABLE_COLS.map(c => {
+            if (c.key === 'status') {
+              return `<td class="status-${r.status || 'unknown'}">${r[c.key] ?? ''}</td>`;
+            }
+            return `<td>${r[c.key] ?? ''}</td>`;
+          }).join('')}
+        </tr>
+      `).join('');
+    }
+
+    function renderAll() {
+      renderKPI();
+      renderTable();
+    }
+  </script>
+
+  <!-- ==================== 引入 SDK 并接入 ==================== -->
+  <!-- 开发环境直接引源码;生产环境应引 dist/agentic-web-data.umd.js -->
+  <script src="../sdk/src/agentic-web-data.js"></script>
+
+  <script>
+    // ⚠️ 硬编码示例:endpoint 与 appKey 生产环境应由构建注入/环境变量提供,禁止明文写死
+    const sdk = new AgenticWebData({
+      endpoint: 'http://localhost:3000/refresh',   // Agent 服务端地址(示例:本地)
+      appKey: 'DEV_APP_KEY_PLACEHOLDER',            // 鉴权 key(示例占位,勿硬编码到生产)
+      onChange: (rows) => {
+        state.rows = rows;   // 写入共享内存
+        renderAll();         // 复用现有渲染,零改动
+      },
+    });
+
+    // 初始:先用降级数据渲染,主数据走 sdk.refresh
+    state.rows = seedRows();
+    renderAll();
+
+    document.getElementById('btnRefresh').onclick = async () => {
+      const btn = document.getElementById('btnRefresh');
+      const statusEl = document.getElementById('status');
+      btn.disabled = true; btn.textContent = '刷新中…';
+      statusEl.textContent = '';
+      try {
+        await sdk.refresh(document.documentElement.outerHTML);
+        statusEl.textContent = '刷新成功';
+      } catch (e) {
+        statusEl.textContent = '刷新失败:' + e.message;
+      } finally {
+        btn.disabled = false; btn.textContent = '刷新数据';
+      }
+    };
+  </script>
+</body>
+</html>

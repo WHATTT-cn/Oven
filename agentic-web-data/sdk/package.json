@@ -1,0 +1,13 @@
+{
+  "name": "agentic-web-data-sdk",
+  "version": "1.0.0",
+  "description": "AgenticWebData 前端 SDK:脱敏、桥接、广播,不含大模型",
+  "main": "src/agentic-web-data.js",
+  "module": "src/agentic-web-data.js",
+  "unpkg": "dist/agentic-web-data.umd.js",
+  "scripts": {
+    "build": "echo \"生产打包:请配置 rollup/esbuild 生成 dist/agentic-web-data.umd.js\" && exit 0"
+  },
+  "keywords": ["agentic", "web-data", "sdk"],
+  "license": "MIT"
+}

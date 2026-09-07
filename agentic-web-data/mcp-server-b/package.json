@@ -1,0 +1,19 @@
+{
+  "name": "mcp-server-b",
+  "version": "1.0.0",
+  "description": "MCP 服务端 B:结构化(SQL)+ 非结构化(文档/检索)数据库 tool + resource(SSE transport)",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "express": "^4.19.2",
+    "mysql2": "^3.11.0",
+    "mongodb": "^6.8.0",
+    "dotenv": "^16.4.5"
+  },
+  "keywords": ["mcp", "database", "sql", "nosql"],
+  "license": "MIT"
+}

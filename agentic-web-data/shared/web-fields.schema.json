@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://agentic-web-data/shared/web-fields.schema.json",
+  "title": "WebFieldsRow",
+  "description": "页面字段契约:前后端共用。清洗脚本输出的每一行必须匹配此结构。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "title"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "记录唯一标识"
+    },
+    "title": {
+      "type": "string",
+      "description": "标题/名称"
+    },
+    "region": {
+      "type": "string",
+      "description": "地区/区域"
+    },
+    "category": {
+      "type": "string",
+      "description": "分类"
+    },
+    "status": {
+      "type": "string",
+      "description": "状态",
+      "enum": ["active", "inactive", "pending", "unknown"]
+    },
+    "createdDate": {
+      "type": "string",
+      "description": "创建日期 (YYYY-MM-DD)"
+    },
+    "value": {
+      "type": "number",
+      "description": "数值指标"
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "name": "agent-server",
+  "version": "1.0.0",
+  "description": "AgenticWebData 多 Agent 服务端:监管者 + 子Agent1/2/3 + 双 MCP 客户端",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "express": "^4.19.2",
+    "cors": "^2.8.5",
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "isolated-vm": "^5.0.1",
+    "ioredis": "^5.4.1",
+    "dotenv": "^16.4.5"
+  },
+  "keywords": ["agentic", "multi-agent", "supervisor", "mcp"],
+  "license": "MIT"
+}
